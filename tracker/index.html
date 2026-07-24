@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tracker — IGCSE Playbook</title>
+  <meta name="description" content="Your Cambridge IGCSE traffic-light tracker. Load a syllabus (PDF, paste, or pick a subject), rate every topic Red / Amber / Green, and watch your progress over two years.">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/tracker.css">
+  <script src="/assets/js/theme.js"></script>
+</head>
+<body>
+  <div id="nav-container"></div>
+
+  <header class="section section--tight">
+    <div class="container">
+      <span class="eyebrow">Your self-assessment</span>
+      <h1>The traffic-light tracker</h1>
+      <p class="lead" style="max-width: 66ch;">
+        Load a syllabus, then rate every topic honestly: <span class="badge badge--red">Red</span> (don't know it),
+        <span class="badge badge--amber">Amber</span> (getting there), <span class="badge badge--green">Green</span>
+        (can answer past-paper questions with no notes). It saves automatically in this browser.
+        A topic only earns Green after you've <em>tested</em> it — not after reading.
+      </p>
+    </div>
+  </header>
+
+  <!-- INPUT PATHS -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="tk-paths">
+        <div class="tk-path">
+          <h4><span class="tk-path__num">1</span> Upload a PDF</h4>
+          <p>Drop your syllabus PDF here — it's parsed entirely in your browser, nothing is uploaded anywhere.</p>
+          <div class="tk-drop" id="tk-drop">Click or drop a syllabus <strong>.pdf</strong> here</div>
+          <input type="file" id="tk-pdf-input" accept="application/pdf" hidden>
+        </div>
+        <div class="tk-path">
+          <h4><span class="tk-path__num">2</span> Paste text</h4>
+          <p>Open the syllabus PDF, select the “subject content” pages, copy, and paste here. Just as good as upload — best for French &amp; Psychology.</p>
+          <textarea class="tk-textarea" id="tk-paste" placeholder="Paste syllabus text…"></textarea>
+          <button class="btn btn--primary btn--sm" id="tk-parse-paste">Parse pasted text →</button>
+        </div>
+        <div class="tk-path">
+          <h4><span class="tk-path__num">3</span> Pick a subject</h4>
+          <p>Start from a high-level outline for one of your nine subjects, then edit rows to match your syllabus.</p>
+          <select class="tk-select" id="tk-subject-select"><option value="">Choose a subject…</option></select>
+          <button class="btn btn--primary btn--sm" id="tk-load-subject">Load subject outline →</button>
+        </div>
+      </div>
+
+      <div class="tk-status" id="tk-status" style="display:none"></div>
+      <div class="tk-preview" id="tk-preview" style="display:none"></div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <div class="tracker-shell">
+    <div class="tracker-layout">
+
+      <!-- SIDEBAR -->
+      <aside class="tracker-sidebar no-print">
+        <div class="tk-panel">
+          <span class="tk-panel__label">Current subject</span>
+          <h3 id="tk-subject-name" style="margin:0">—</h3>
+        </div>
+
+        <div class="tk-panel tk-progress" id="tk-progress"></div>
+
+        <div class="tk-panel">
+          <span class="tk-panel__label">View</span>
+          <div class="tk-toggle" id="tk-view-toggle">
+            <button data-view="topic" aria-pressed="true">Topic level</button>
+            <button data-view="objective" aria-pressed="false">Objective level</button>
+          </div>
+          <p class="u-xs u-muted" style="margin:var(--space-2) 0 0">Ratings for the two views are stored independently.</p>
+        </div>
+
+        <div class="tk-panel">
+          <span class="tk-panel__label">Filter</span>
+          <div class="tk-filters" id="tk-filters">
+            <button data-filter="all" aria-pressed="true">All</button>
+            <button data-filter="red">Red</button>
+            <button data-filter="amber">Amber</button>
+            <button data-filter="green">Green</button>
+            <button data-filter="unrated">Unrated</button>
+          </div>
+          <div style="margin-top:var(--space-3);display:none" id="tk-tier-filter">
+            <span class="tk-panel__label">Tier (0607)</span>
+            <div class="tk-filters">
+              <button data-tier="all" aria-pressed="true">All</button>
+              <button data-tier="core">Core</button>
+              <button data-tier="extended">Extended</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tk-panel">
+          <span class="tk-panel__label">Save &amp; export</span>
+          <div class="tk-btn-col">
+            <button class="btn btn--outline btn--sm" id="tk-btn-download">Download as JSON</button>
+            <button class="btn btn--ghost btn--sm" id="tk-btn-load">Load from JSON…</button>
+            <input type="file" id="tk-load-input" accept="application/json" hidden>
+            <button class="btn btn--ghost btn--sm" id="tk-btn-print">Print / save as PDF</button>
+          </div>
+          <div id="tk-drive-area" class="tk-btn-col" style="margin-top:var(--space-3)"></div>
+          <p class="tk-saveinfo" id="tk-save-info" style="margin-top:var(--space-3)">Not saved yet.</p>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main>
+        <div class="tk-print-head" id="tk-print-head"></div>
+        <div class="tk-toolbar" id="tk-toolbar"></div>
+        <div id="tk-table-wrap">
+          <div class="tk-empty"><p>No tracker loaded yet.</p><p class="u-sm">Use one of the three paths above to build your tracker.</p></div>
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="tk-modal-backdrop" id="tk-modal-backdrop">
+    <div class="tk-modal" id="tk-modal-content"></div>
+  </div>
+
+  <footer class="site-footer no-print">
+    <div class="container">
+      <p>IGCSE Playbook — built for you, by your sister.<br>Cambridge IGCSE · Exams May/June 2028.</p>
+      <div class="foot-links">
+        <a href="/index.html">Home</a>
+        <a href="/study-system.html">Study System</a>
+        <a href="/resources.html">Resources</a>
+        <a href="/past-papers.html">Past Papers</a>
+        <a href="/subjects/index.html">Subjects</a>
+        <a href="/tracker/index.html">Tracker</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- PDF.js (CDN) — only loaded on this page, for the PDF upload path -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+
+  <script src="/assets/js/nav.js"></script>
+  <script src="/assets/js/parser.js"></script>
+  <script src="/assets/js/drive.js"></script>
+  <script src="/assets/js/tracker.js"></script>
+</body>
+</html>

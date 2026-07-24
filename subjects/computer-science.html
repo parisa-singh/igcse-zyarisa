@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Computer Science (0478) — IGCSE Playbook</title>
+  <meta name="description" content="Cambridge IGCSE Computer Science 0478: papers and weightings, command-word pitfalls, a full Cambridge pseudocode reference, and the best resources.">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <script src="/assets/js/theme.js"></script>
+</head>
+<body>
+  <div id="nav-container"></div>
+
+  <header class="section section--hero">
+    <div class="container container--narrow">
+      <div class="chips" style="margin-bottom: var(--space-4);">
+        <span class="badge badge--accent">0478</span>
+        <span class="badge badge--neutral">Single tier</span>
+        <span class="badge badge--neutral">Exams May/June 2028</span>
+      </div>
+      <h1 class="hero-title">Computer Science</h1>
+      <p class="lead" style="margin-top: var(--space-4); max-width: 60ch;">
+        Cambridge pseudocode is basically its own strict little language, and the mark scheme is
+        unforgiving about it. Learn the conventions properly and Paper 2 stops being scary.
+      </p>
+    </div>
+  </header>
+
+  <!-- OVERVIEW -->
+  <section class="section">
+    <div class="container container--narrow">
+      <div class="section-head"><span class="eyebrow">The subject</span><h2>What Computer Science is, at IGCSE</h2></div>
+      <p>IGCSE Computer Science splits into two halves that need quite different kinds of revision. There's the <strong>theory</strong> side — hardware and processing, data representation, networks and communication, security, and the ethical and environmental impact of computing. And there's the <strong>problem-solving</strong> side — algorithm design, programming, and writing solutions in Cambridge's own pseudocode. You need to be comfortable switching between "explain how something works" answers and "write correct, precise pseudocode" answers, often in the same exam.</p>
+    </div>
+  </section>
+
+  <!-- PAPERS -->
+  <section class="section" style="background: var(--cream);">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">Assessment</span><h2>Papers &amp; weighting</h2></div>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Paper</th><th>Name</th><th>Duration</th><th>Weight</th><th>What it is</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1</strong></td><td>Theory</td><td>1h 45min</td><td>60%</td><td>Short answer and structured questions on theory</td></tr>
+            <tr><td><strong>2</strong></td><td>Problem-Solving and Programming</td><td>1h 45min</td><td>40%</td><td>Pseudocode, algorithm design, program development</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="weight-bar" style="margin-top: var(--space-5);">
+        <div class="weight-bar__seg" style="width: 60%; background: var(--accent);"></div>
+        <div class="weight-bar__seg" style="width: 40%; background: var(--accent-warm);"></div>
+      </div>
+      <p class="u-sm u-muted u-mono" style="margin-top: var(--space-3);">Paper 1 — 60% &nbsp;|&nbsp; Paper 2 — 40%</p>
+    </div>
+  </section>
+
+  <!-- COMMAND WORD PITFALLS -->
+  <section class="section">
+    <div class="container container--narrow">
+      <div class="section-head"><span class="eyebrow">Where marks leak</span><h2>Command-word pitfalls in Computer Science</h2></div>
+      <div class="u-stack">
+        <div class="card card--warm">
+          <h4>"State" / "Identify"</h4>
+          <p class="u-sm u-mb-0">These want one exact term — name the correct component, protocol, or data type — not a sentence describing it. Extra waffle doesn't earn extra marks, and a vague near-miss usually scores zero.</p>
+        </div>
+        <div class="card card--warm">
+          <h4>"Describe" vs "Explain"</h4>
+          <p class="u-sm u-mb-0"><strong>Describe</strong> wants what happens, step by step. <strong>Explain</strong> wants why it happens, with reasoning or a cause-effect link. Answering an "explain" with only a description leaves the reasoning marks on the table.</p>
+        </div>
+        <div class="card card--warm">
+          <h4>"Write" / "Complete an algorithm"</h4>
+          <p class="u-sm u-mb-0">This means real Cambridge pseudocode, following their exact conventions — not "code-ish" English and not Python syntax. See the pseudocode reference below before you sit any programming question.</p>
+        </div>
+      </div>
+      <p class="u-sm u-muted" style="margin-top: var(--space-4);">Full command-word table on the <a href="/study-system.html#command-words">Study System page</a>.</p>
+    </div>
+  </section>
+
+  <!-- SUBJECT-SPECIFIC TIPS -->
+  <section class="section" style="background: var(--cream);">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">The specific stuff</span><h2>CS tips that actually move marks</h2></div>
+      <div class="grid-2">
+        <div class="card card--accent">
+          <h4>Trace tables — drill them specifically</h4>
+          <p class="u-sm u-mb-0">A trace-table question appears every single year. Practise working through an algorithm row by row, updating each variable exactly when the algorithm says to — not when it "feels" like it should change.</p>
+        </div>
+        <div class="card card--accent">
+          <h4>Design in English first, then translate</h4>
+          <p class="u-sm u-mb-0">Don't try to write pseudocode straight out of your head. Sketch the logic in plain English or a flowchart first, then convert it line by line into correct pseudocode. It's faster and far less error-prone.</p>
+        </div>
+        <div class="card card--accent">
+          <h4>Testing needs three kinds of data</h4>
+          <p class="u-sm u-mb-0">Any validation question wants <strong>normal</strong>, <strong>boundary</strong>, and <strong>erroneous</strong> test data. Missing one of the three is one of the most common ways to drop easy marks on test-plan questions.</p>
+        </div>
+        <div class="card card--accent">
+          <h4>Use the exact technical term</h4>
+          <p class="u-sm u-mb-0">Theory marks live and die on precision: <strong>validation</strong> is not <strong>verification</strong>, a <strong>compiler</strong> is not an <strong>interpreter</strong>. Close-but-wrong terminology scores nothing, even if you clearly understand the concept.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PSEUDOCODE REFERENCE -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">Learn it exactly</span><h2>Pseudocode reference</h2></div>
+      <p>Cambridge's pseudocode conventions are effectively their own mini-language, and the mark scheme is strict about following them precisely — so it's worth learning them properly rather than winging it in the exam.</p>
+
+      <div class="card" style="margin-top: var(--space-5);">
+        <h4>The core rules</h4>
+        <ul class="u-sm">
+          <li><strong>Keywords in UPPERCASE:</strong> <code>IF</code>, <code>THEN</code>, <code>ELSE</code>, <code>ENDIF</code>, <code>FOR</code>, <code>TO</code>, <code>NEXT</code>, <code>WHILE</code>, <code>DO</code>, <code>ENDWHILE</code>, <code>REPEAT</code>, <code>UNTIL</code>, <code>PROCEDURE</code>, <code>ENDPROCEDURE</code>, <code>FUNCTION</code>, <code>RETURN</code>, <code>INPUT</code>, <code>OUTPUT</code>, <code>AND</code>, <code>OR</code>, <code>NOT</code>, <code>DIV</code>, <code>MOD</code></li>
+          <li><strong>Identifiers in PascalCase:</strong> <code>NumberOfPlayers</code>, <code>TotalScore</code>, <code>UserName</code></li>
+          <li><strong>Assignment uses ←, never =:</strong> <code>Count ← Count + 1</code></li>
+          <li><strong>String literals in double quotes:</strong> <code>"Hello"</code></li>
+          <li><strong>Comments start with //</strong> and run to the end of the line</li>
+          <li><strong>Arrays are 1-indexed:</strong> <code>MyArray[1:10]</code> holds elements 1 through 10, not 0 through 9</li>
+        </ul>
+      </div>
+
+      <div class="tip-box tip-box--warn" style="margin-top: var(--space-5);">
+        <span class="tip-label">Common pseudocode errors that lose marks</span>
+        <p class="u-mb-0">Writing keywords in lowercase (<code>if</code> instead of <code>IF</code>); using <code>=</code> for assignment instead of <code>←</code>; confusing <code>WHILE</code> (checks before each loop) with <code>REPEAT...UNTIL</code> (checks after); off-by-one errors from forgetting arrays start at 1, not 0; and forgetting to close a structure with <code>ENDIF</code>, <code>ENDWHILE</code>, or <code>ENDPROCEDURE</code>.</p>
+      </div>
+
+      <p style="margin-top: var(--space-5);"><strong>Worked example — linear search</strong></p>
+      <pre>PROCEDURE LinearSearch(Numbers, Target)
+   Found ← FALSE
+   Index ← 1
+   WHILE Index &lt;= 10 AND Found = FALSE DO
+      IF Numbers[Index] = Target THEN
+         OUTPUT "Found at position ", Index
+         Found ← TRUE
+      ENDIF
+      Index ← Index + 1
+   ENDWHILE
+   IF Found = FALSE THEN
+      OUTPUT "Not found"
+   ENDIF
+ENDPROCEDURE</pre>
+
+      <p class="u-sm u-muted" style="margin-top: var(--space-4);">Other algorithms worth being able to write from memory in pseudocode: bubble sort, linear search, binary search, totalling, counting, and finding a maximum or minimum value.</p>
+    </div>
+  </section>
+
+  <!-- RESOURCES -->
+  <section class="section" style="background: var(--cream);">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">What to use</span><h2>Best resources for Computer Science</h2></div>
+      <div class="resource-grid">
+        <a class="card" href="https://www.youtube.com/@craigndave" target="_blank" rel="noopener">
+          <h4>Craig'n'Dave (YouTube)</h4>
+          <p class="u-sm u-mb-0">The single best channel for IGCSE CS — full topic explanations plus past-paper walkthroughs. Start here for basically everything.</p>
+          <span class="card__arrow">Watch →</span>
+        </a>
+        <a class="card" href="https://www.youtube.com/results?search_query=IGCSE+0478+computer+science" target="_blank" rel="noopener">
+          <h4>More on YouTube</h4>
+          <p class="u-sm u-mb-0">Search for extra explanations of any topic you're still stuck on — useful for a second angle on tricky theory.</p>
+          <span class="card__arrow">Search →</span>
+        </a>
+        <a class="card" href="https://www.savemyexams.com/igcse/computer-science/" target="_blank" rel="noopener">
+          <h4>Save My Exams</h4>
+          <p class="u-sm u-mb-0">Concise, syllabus-mapped revision notes and topic questions, covering both theory and programming.</p>
+          <span class="card__arrow">Open →</span>
+        </a>
+      </div>
+      <p class="u-sm u-muted" style="margin-top: var(--space-4);">Past papers, examiner reports, and the syllabus are all on the <a href="/resources.html">Resources page</a>.</p>
+    </div>
+  </section>
+
+  <!-- TRACKER CTA -->
+  <section class="section" style="background: var(--cream);">
+    <div class="container container--narrow u-center">
+      <h2>Ready to map it out?</h2>
+      <p class="lead">Build a traffic-light tracker for Computer Science — load the syllabus, rate every topic, and turn Red into Green over two years.</p>
+      <div class="btn-row" style="justify-content: center; margin-top: var(--space-5);">
+        <a class="btn btn--primary" href="/tracker/index.html?subject=computer-science">Generate a tracker for Computer Science →</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>IGCSE Playbook — built for you, by your sister.<br>Cambridge IGCSE · Exams May/June 2028.</p>
+      <div class="foot-links">
+        <a href="/index.html">Home</a>
+        <a href="/study-system.html">Study System</a>
+        <a href="/resources.html">Resources</a>
+        <a href="/past-papers.html">Past Papers</a>
+        <a href="/subjects/index.html">Subjects</a>
+        <a href="/tracker/index.html">Tracker</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/nav.js"></script>
+</body>
+</html>

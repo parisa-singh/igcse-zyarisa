@@ -1,0 +1,109 @@
+{
+  "international-math": {
+    "name": "International Mathematics",
+    "code": "0607",
+    "slug": "international-math",
+    "examSeason": "May/June 2028",
+    "tier": "Core and Extended",
+    "specialNote": "Includes investigation paper. Calculator required and central to all papers.",
+    "papers": [
+      { "number": 1, "name": "Non-Calculator Short Answer (Core)", "duration": "45 min", "weightPercent": 25, "description": "Short answer, no calculator" },
+      { "number": 2, "name": "Non-Calculator Short Answer (Extended)", "duration": "45 min", "weightPercent": 20, "description": "Short answer, no calculator" },
+      { "number": 3, "name": "Calculator Short Answer (Core)", "duration": "45 min", "weightPercent": 25, "description": "Short answer, calculator allowed" },
+      { "number": 4, "name": "Calculator Short Answer (Extended)", "duration": "45 min", "weightPercent": 20, "description": "Short answer, calculator allowed" },
+      { "number": 5, "name": "Investigation (Core)", "duration": "1h 15min", "weightPercent": 25, "description": "Open-ended mathematical investigation" },
+      { "number": 6, "name": "Investigation (Extended)", "duration": "1h 30min", "weightPercent": 20, "description": "Open-ended mathematical investigation, extended" }
+    ]
+  },
+  "english-literature": {
+    "name": "English Literature",
+    "code": "0475",
+    "slug": "english-literature",
+    "examSeason": "May/June 2028",
+    "tier": "Single tier",
+    "papers": [
+      { "number": 1, "name": "Poetry and Prose", "duration": "1h 30min", "weightPercent": 50, "description": "Two questions: one on poetry, one on prose" },
+      { "number": 2, "name": "Drama", "duration": "1h 30min", "weightPercent": 50, "description": "Two questions on drama texts" }
+    ]
+  },
+  "english-language": {
+    "name": "English Language",
+    "code": "0500",
+    "slug": "english-language",
+    "examSeason": "May/June 2028",
+    "tier": "Single tier",
+    "papers": [
+      { "number": 1, "name": "Reading", "duration": "2h", "weightPercent": 50, "description": "Comprehension, summary, and analysis of two passages" },
+      { "number": 2, "name": "Writing", "duration": "2h", "weightPercent": 50, "description": "Directed writing and creative/descriptive composition" }
+    ]
+  },
+  "french": {
+    "name": "French",
+    "code": "0520",
+    "slug": "french",
+    "examSeason": "May/June 2028",
+    "tier": "Single tier",
+    "papers": [
+      { "number": 1, "name": "Listening", "duration": "~40 min", "weightPercent": 25, "description": "Multiple choice, gap fill, short answers" },
+      { "number": 2, "name": "Reading and Directed Writing", "duration": "1h 45min", "weightPercent": 50, "description": "Comprehension and writing tasks" },
+      { "number": 4, "name": "Coursework / Speaking", "duration": "Variable", "weightPercent": 25, "description": "Check with school — may be speaking exam or coursework" }
+    ]
+  },
+  "business": {
+    "name": "Business Studies",
+    "code": "0450",
+    "slug": "business",
+    "examSeason": "May/June 2028",
+    "tier": "Single tier",
+    "papers": [
+      { "number": 1, "name": "Short Answer and Data Response", "duration": "1h 30min", "weightPercent": 50, "description": "Compulsory short and structured questions" },
+      { "number": 2, "name": "Case Study", "duration": "1h 30min", "weightPercent": 50, "description": "Extended case study with application and evaluation questions" }
+    ]
+  },
+  "economics": {
+    "name": "Economics",
+    "code": "0455",
+    "slug": "economics",
+    "examSeason": "May/June 2028",
+    "tier": "Single tier",
+    "papers": [
+      { "number": 1, "name": "Multiple Choice", "duration": "45 min", "weightPercent": 30, "description": "30 multiple choice questions" },
+      { "number": 2, "name": "Structured Questions", "duration": "2h 15min", "weightPercent": 70, "description": "Data response and structured essay questions" }
+    ]
+  },
+  "computer-science": {
+    "name": "Computer Science",
+    "code": "0478",
+    "slug": "computer-science",
+    "examSeason": "May/June 2028",
+    "tier": "Single tier",
+    "papers": [
+      { "number": 1, "name": "Theory", "duration": "1h 45min", "weightPercent": 60, "description": "Short answer and structured questions on theory" },
+      { "number": 2, "name": "Problem-Solving and Programming", "duration": "1h 45min", "weightPercent": 40, "description": "Pseudocode, algorithm design, program development" }
+    ]
+  },
+  "psychology": {
+    "name": "Psychology",
+    "code": "0980",
+    "slug": "psychology",
+    "examSeason": "May/June 2028",
+    "tier": "Single tier",
+    "papers": [
+      { "number": 1, "name": "Core Studies and Applied Psychology", "duration": "2h", "weightPercent": 50, "description": "Questions on core studies, research methods, approaches" },
+      { "number": 2, "name": "Psychological Investigations", "duration": "1h 30min", "weightPercent": 50, "description": "Data handling, research design, practical applications" }
+    ]
+  },
+  "physics": {
+    "name": "Physics",
+    "code": "0625",
+    "slug": "physics",
+    "examSeason": "May/June 2028",
+    "tier": "Core and Extended",
+    "papers": [
+      { "number": 1, "name": "Multiple Choice (Core)", "duration": "45 min", "weightPercent": 30, "description": "40 multiple choice questions" },
+      { "number": 2, "name": "Core Theory", "duration": "1h 15min", "weightPercent": 50, "description": "Short answer and structured questions" },
+      { "number": 4, "name": "Extended Theory", "duration": "1h 15min", "weightPercent": 50, "description": "Extended short answer and structured questions" },
+      { "number": 6, "name": "Alternative to Practical", "duration": "1h", "weightPercent": 20, "description": "Questions based on experimental skills and data analysis" }
+    ]
+  }
+}
