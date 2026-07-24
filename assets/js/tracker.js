@@ -682,7 +682,7 @@
     clearStatus(); hidePreview();
 
     // Populate subject dropdown from subjects.json
-    fetch('/data/subjects.json').then(function (r) { return r.json(); }).then(function (data) {
+    fetch('/igcse-zyarisa/data/subjects.json').then(function (r) { return r.json(); }).then(function (data) {
       window.__SUBJECTS__ = data;
       if (el.subjectSelect) {
         var opts = ['<option value="">Choose a subject…</option>'];

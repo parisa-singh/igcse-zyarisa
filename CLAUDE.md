@@ -23,13 +23,15 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
 6. PDF.js CDN loaded only in `tracker/index.html`.
 7. Tracker styles live in `tracker.css` only — never bleed into `main.css`.
 
-## Hosting (decided)
-- GitHub account: **parisa-singh**.
-- Site uses root-relative paths throughout, so it MUST be served from the domain root.
-- **Recommended repo name: `parisa-singh.github.io`** (user site → served at root, paths just work).
-- If a different repo name is ever used, paths break at the `/reponame/` subpath — would need
-  a `<base href="/reponame/">` in every page's `<head>` AND changing `fetch('/data/subjects.json')`
-  to a relative path. Avoid; prefer the user-site repo name.
+## Hosting (LIVE)
+- GitHub account **parisa-singh**, repo **`igcse-zyarisa`** (public). Pages builds from `main` / root.
+- LIVE URL: **https://parisa-singh.github.io/igcse-zyarisa/**
+- Served from a PROJECT SUBPATH, so ALL internal paths are prefixed with `/igcse-zyarisa/`
+  (done via sed across every HTML file + nav.js + tracker.js; indexOf active-state checks in
+  nav.js also carry the prefix and still use `=== 0`).
+- If the repo is renamed again: re-run the same prefix swap on nav.js, tracker.js, and all HTML
+  `href=`/`src=`. For a custom domain at root instead: strip the prefix and add a CNAME file.
+- Local remote `origin` → https://github.com/parisa-singh/igcse-zyarisa.git
 
 ## Build status
 - [x] Folder structure

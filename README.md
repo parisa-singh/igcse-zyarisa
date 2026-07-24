@@ -4,14 +4,14 @@ Static site for Cambridge IGCSE study — Grade 9–10, 2026–2028. Built with 
 CSS, and JavaScript. No frameworks, no build step.
 
 ## Hosting
-GitHub Pages, account **parisa-singh**. Because every path is root-relative, host at the
-domain root: **name the repo `parisa-singh.github.io`** (a user site). Then push to `main`
-and enable Pages (Settings → Pages → Deploy from branch → `main` / root). The site will be
-live at `https://parisa-singh.github.io/`.
+GitHub Pages, account **parisa-singh**, repo **`igcse-zyarisa`**.
+Live at: **https://parisa-singh.github.io/igcse-zyarisa/**
 
-> If you must use a different repo name, the site is served from `/<repo>/` and root-relative
-> paths break — you'd need a `<base href="/<repo>/">` in every page and a relative
-> `fetch('data/subjects.json')`. The user-site repo name avoids all of that.
+All internal paths are prefixed with `/igcse-zyarisa/` so the site works at this project
+subpath. If the repo is ever renamed, update that prefix everywhere:
+`assets/js/nav.js`, `assets/js/tracker.js`, and all `href=`/`src=` in the HTML files.
+(To move to a custom domain served at root, strip the `/igcse-zyarisa` prefix and add a
+`CNAME` file.)
 
 ## Local development
 Paths are root-relative and `data/subjects.json` is loaded via `fetch()`, which does **not**

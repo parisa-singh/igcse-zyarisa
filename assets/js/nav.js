@@ -6,28 +6,28 @@
   'use strict';
 
   var LINKS = [
-    { href: '/index.html', label: 'Home' },
-    { href: '/study-system.html', label: 'Study System' },
-    { href: '/resources.html', label: 'Resources' },
-    { href: '/past-papers.html', label: 'Past Papers' }
+    { href: '/igcse-zyarisa/index.html', label: 'Home' },
+    { href: '/igcse-zyarisa/study-system.html', label: 'Study System' },
+    { href: '/igcse-zyarisa/resources.html', label: 'Resources' },
+    { href: '/igcse-zyarisa/past-papers.html', label: 'Past Papers' }
   ];
 
   var SUBJECTS = [
-    { href: '/subjects/international-math.html', label: 'International Mathematics', code: '0607' },
-    { href: '/subjects/english-literature.html', label: 'English Literature', code: '0475' },
-    { href: '/subjects/english-language.html', label: 'English Language', code: '0500' },
-    { href: '/subjects/french.html', label: 'French', code: '0520' },
-    { href: '/subjects/business.html', label: 'Business Studies', code: '0450' },
-    { href: '/subjects/economics.html', label: 'Economics', code: '0455' },
-    { href: '/subjects/computer-science.html', label: 'Computer Science', code: '0478' },
-    { href: '/subjects/psychology.html', label: 'Psychology', code: '0980' },
-    { href: '/subjects/physics.html', label: 'Physics', code: '0625' }
+    { href: '/igcse-zyarisa/subjects/international-math.html', label: 'International Mathematics', code: '0607' },
+    { href: '/igcse-zyarisa/subjects/english-literature.html', label: 'English Literature', code: '0475' },
+    { href: '/igcse-zyarisa/subjects/english-language.html', label: 'English Language', code: '0500' },
+    { href: '/igcse-zyarisa/subjects/french.html', label: 'French', code: '0520' },
+    { href: '/igcse-zyarisa/subjects/business.html', label: 'Business Studies', code: '0450' },
+    { href: '/igcse-zyarisa/subjects/economics.html', label: 'Economics', code: '0455' },
+    { href: '/igcse-zyarisa/subjects/computer-science.html', label: 'Computer Science', code: '0478' },
+    { href: '/igcse-zyarisa/subjects/psychology.html', label: 'Psychology', code: '0980' },
+    { href: '/igcse-zyarisa/subjects/physics.html', label: 'Physics', code: '0625' }
   ];
 
-  // Normalize the current path so "/", "/index.html", and "/subjects/" all resolve.
+  // Normalize the current path so "/", "/igcse-zyarisa/index.html", and "/igcse-zyarisa/subjects/" all resolve.
   function currentPath() {
     var p = window.location.pathname;
-    if (p === '/' || p === '') return '/index.html';
+    if (p === '/' || p === '') return '/igcse-zyarisa/index.html';
     if (p.charAt(p.length - 1) === '/') return p + 'index.html';
     return p;
   }
@@ -37,14 +37,14 @@
   }
 
   function subjectsActive(path) {
-    return path.indexOf('/subjects/') === 0;
+    return path.indexOf('/igcse-zyarisa/subjects/') === 0;
   }
 
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
   function buildOverlay() {
     var path = currentPath();
-    var main = LINKS.concat([{ href: '/tracker/index.html', label: 'Tracker' }]).map(function (l) {
+    var main = LINKS.concat([{ href: '/igcse-zyarisa/tracker/index.html', label: 'Tracker' }]).map(function (l) {
       return '<a href="' + l.href + '"' + (isActive(l.href, path) ? ' class="is-active"' : '') + '>' + esc(l.label) + '</a>';
     }).join('');
     var subs = SUBJECTS.map(function (s) {
@@ -53,7 +53,7 @@
     return '<div class="nav-overlay" data-overlay>' +
       main +
       '<div class="nav-overlay__group-label">Subjects</div>' +
-      '<a href="/subjects/index.html">All subjects — hub</a>' +
+      '<a href="/igcse-zyarisa/subjects/index.html">All subjects — hub</a>' +
       subs +
       '</div>';
   }
@@ -78,22 +78,22 @@
     var dropdown =
       '<div class="nav-dropdown" data-dropdown>' +
         '<a class="site-nav__link' + (subjectsActive(path) ? ' is-active' : '') +
-          '" href="/subjects/index.html" data-dropdown-toggle aria-haspopup="true" aria-expanded="false">' +
+          '" href="/igcse-zyarisa/subjects/index.html" data-dropdown-toggle aria-haspopup="true" aria-expanded="false">' +
           'Subjects <span class="nav-dropdown__caret">▾</span></a>' +
         '<div class="nav-dropdown__menu">' +
-          '<a href="/subjects/index.html"><span>All subjects</span><span class="code">hub</span></a>' +
+          '<a href="/igcse-zyarisa/subjects/index.html"><span>All subjects</span><span class="code">hub</span></a>' +
           subjectItems +
         '</div>' +
       '</div>';
-    var tracker = '<a class="btn btn--primary site-nav__cta' + (path.indexOf('/tracker/') === 0 ? ' is-active' : '') +
-      '" href="/tracker/index.html">Tracker</a>';
+    var tracker = '<a class="btn btn--primary site-nav__cta' + (path.indexOf('/igcse-zyarisa/tracker/') === 0 ? ' is-active' : '') +
+      '" href="/igcse-zyarisa/tracker/index.html">Tracker</a>';
     var themeBtn = '<button class="theme-toggle" data-theme-toggle title="Theme: ' + esc(label) +
       '" aria-label="Switch theme (current: ' + esc(label) + ')">' + icon + '</button>';
     var burger = '<button class="nav-burger" data-burger aria-label="Open menu" aria-expanded="false"><span></span></button>';
 
     container.innerHTML =
       '<nav class="site-nav"><div class="site-nav__inner">' +
-        '<a class="site-nav__brand" href="/index.html"><span class="brand-mark">◆</span> IGCSE&nbsp;Playbook</a>' +
+        '<a class="site-nav__brand" href="/igcse-zyarisa/index.html"><span class="brand-mark">◆</span> IGCSE&nbsp;Playbook</a>' +
         '<div class="site-nav__links">' + linksHtml + dropdown + tracker + themeBtn + '</div>' +
         themeBtn + /* mobile theme toggle sits next to burger */
         burger +
