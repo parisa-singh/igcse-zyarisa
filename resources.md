@@ -83,6 +83,7 @@
 | Casio Education (Official) | https://www.youtube.com/@CasioEducationUK | Free | Official Casio: exam mode, feature walkthroughs. Search "CG50 [topic]". |
 | Math with Mr. J | https://www.youtube.com/@MathwithMrJ | Free | Clear step-by-step; good for stats and equation solving with calculator guidance. |
 | IGCSE with Optimus | https://www.youtube.com/@IGCSEwithOptimus | Free | Recorded lessons, tips and tricks for physics and maths; past paper technique. |
+| 3Blue1Brown | https://www.youtube.com/@3blue1brown | Free | Above IGCSE exam level, but invaluable for *why* things work — functions/transformations, statistics intuition, any topic that won't click conceptually. Use to build understanding, NOT for exam technique or past-paper prep. |
 
 ---
 
@@ -93,6 +94,19 @@
 | IGCSESUCCESS | https://www.youtube.com/@iGCSESuccess | Free | English Language (0500), Literature (0475) | Built specifically for Cambridge IGCSE English. Covers both 0500 and 0475 directly. |
 | Mr Salles Teaches English | https://www.youtube.com/@MrSallesTeachesEnglish | Free | English Language, Literature | 900+ videos on exam technique — structure, what examiners reward, fast grade gains. GCSE-focused, directly applicable. |
 | Snap Revise | https://www.youtube.com/@snaprevise | Free | English Language | Short structured videos on language feature ID and analysis. Useful for 0500 Paper 1 commentary skills. |
+
+---
+
+## Text-analysis sites — English Literature (0475)
+
+> **Caveat for all three:** built for general literature study, not Cambridge 0475. Use to understand
+> texts/themes/characters — not mark-scheme technique, never a substitute for reading the text. Cross-check scope with the syllabus.
+
+| Resource | URL | Access | Notes |
+|---|---|---|---|
+| SparkNotes | https://www.sparknotes.com/ | Free | Free with ads. 500+ texts — chapter summaries, character/theme overviews. Quick plot check. |
+| LitCharts | https://www.litcharts.com/ | Freemium | By the original SparkNotes editors. Colour-coded theme trackers, device glossary, Shakespeare + modern translation. Free online; PDFs/quote explanations paid (~$10/mo). Best-designed. |
+| GradeSaver | https://www.gradesaver.com/ | Freemium | Free chapter summaries, quizzes, theme guides; full guides paid ($20/mo). Real student essays show structured arguments. |
 
 ---
 
@@ -134,6 +148,9 @@
 |---|---|---|---|
 | Craig 'n' Dave | https://www.youtube.com/@craigndave | Free | The single best channel for IGCSE CS. Award-winning, ad-free, bespoke to Cambridge. Pseudocode + past papers. Start here. |
 | IGCSE Computer Science (dedicated) | https://www.youtube.com/@igcsecs | Free | IGCSE CS teacher; difficult concepts and exam technique for 0478. Good complement to Craig 'n' Dave. |
+| CS with SKS | https://www.youtube.com/@CSwithSKS | Free | Covers 0478 directly alongside AS/A Level 9618 and IB CS. Clear topic-by-topic with a strong IGCSE playlist. |
+
+> **Note:** "@TheCSClassroom" on YouTube is Python/IB-focused, NOT IGCSE 0478 — don't confuse it with the 0478 channels above.
 
 ---
 
@@ -177,3 +194,6 @@
 - 2026-07-24 — File created from the resources handoff. Populated `resources.html` with all tables
   (`.resource-table` + Access badges, sorted Free→Freemium→Paid) and added subject-relevant rows to
   each subject page. Keep this file in sync with any future resource edits.
+- 2026-07-24 (update) — Added 3Blue1Brown (0607), CS with SKS + @TheCSClassroom caveat (0478), and the
+  Text-analysis sites group for Literature (LitCharts / SparkNotes / GradeSaver, with caveat). Propagated
+  to resources.html and the international-math, computer-science, and english-literature subject pages.

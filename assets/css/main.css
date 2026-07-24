@@ -864,3 +864,59 @@ section[id], header[id] { scroll-margin-top: calc(var(--nav-h) + 18px); }
 
 /* Print: never show the app-nav bits */
 @media print { .page-toc, .page-toc-fab { display: none !important; } .reveal { opacity: 1 !important; transform: none !important; } }
+
+/* ============================================================================
+   20. HUB / TOOL COMPONENTS — dashboard-style tiles, path timeline, subject strip
+   ========================================================================== */
+.hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
+
+.hub-tile {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-5); border: 1.5px solid var(--rule); border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--paper) 55%, var(--cream));
+  text-decoration: none; color: inherit; position: relative; overflow: hidden;
+  transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.hub-tile::after {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--accent);
+  transform: scaleY(0); transform-origin: top; transition: transform .2s ease;
+}
+.hub-tile:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow); }
+.hub-tile:hover::after { transform: scaleY(1); }
+.hub-tile--warm::after { background: var(--accent-warm); }
+.hub-tile__icon {
+  font-size: 24px; width: 48px; height: 48px; border-radius: var(--radius);
+  display: inline-flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--accent) 12%, transparent); margin-bottom: var(--space-1);
+}
+.hub-tile--warm .hub-tile__icon { background: color-mix(in srgb, var(--accent-warm) 14%, transparent); }
+.hub-tile h3 { margin: 0; font-size: var(--text-lg); }
+.hub-tile p { margin: 0; font-size: var(--text-sm); color: var(--ink-soft); max-width: none; }
+.hub-tile__go { margin-top: auto; padding-top: var(--space-2); color: var(--accent); font-weight: 600; font-size: var(--text-sm); display: inline-flex; gap: 4px; }
+.hub-tile:hover .hub-tile__go { gap: 9px; }
+
+/* Path timeline (Grade 9 → Grade 10 → Exams) */
+.path { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+.path__node { position: relative; padding: var(--space-4); border: 1.5px solid var(--rule); border-radius: var(--radius); background: color-mix(in srgb, var(--paper) 55%, var(--cream)); }
+.path__node .path__tag { font-family: var(--font-mono); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .1em; color: var(--accent); }
+.path__node h4 { margin: var(--space-1) 0 var(--space-2); }
+.path__node p { margin: 0; font-size: var(--text-sm); color: var(--ink-soft); max-width: none; }
+.path__node--now { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); }
+.path__dot { position: absolute; top: -8px; left: var(--space-4); width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 3px solid var(--paper); }
+@media (max-width: 720px) { .path { grid-template-columns: 1fr; } }
+
+/* Subject strip (mini tiles) */
+.subject-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-3); }
+.subject-tile {
+  display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--rule); border-radius: var(--radius); text-decoration: none; color: var(--ink);
+  background: color-mix(in srgb, var(--paper) 55%, var(--cream));
+  transition: border-color .16s ease, transform .16s ease;
+}
+.subject-tile:hover { border-color: var(--accent); transform: translateY(-2px); }
+.subject-tile .code { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--paper); background: var(--accent); border-radius: var(--radius-sm); padding: 2px 6px; flex: none; }
+.subject-tile .name { font-size: var(--text-sm); font-weight: 500; line-height: 1.2; }
+
+/* A compact split callout (e.g. syllabus link bar) */
+.callout-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.callout-bar > div { flex: 1 1 320px; }
