@@ -496,6 +496,23 @@ table.data code { white-space: nowrap; }
 .weight-bar { display: flex; height: 10px; border-radius: var(--radius-pill); overflow: hidden; border: 1px solid var(--rule); background: var(--cream); }
 .weight-bar__seg { height: 100%; }
 
+/* Resource tables (resources.html + subject pages) — wrap in .table-wrap */
+.resource-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); background: color-mix(in srgb, var(--paper) 60%, var(--cream)); }
+.resource-table th, .resource-table td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.resource-table thead th {
+  font-family: var(--font-mono); font-size: var(--text-xs); text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--ink-muted); background: var(--cream);
+  border-bottom: 1.5px solid var(--rule); white-space: nowrap;
+}
+.resource-table tbody tr:last-child td { border-bottom: 0; }
+.resource-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+.resource-table .res-name { font-weight: 600; min-width: 150px; }
+.resource-table .res-name a { color: var(--accent); text-decoration: none; }
+.resource-table .res-name a:hover { text-decoration: underline; }
+.resource-table .res-type { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink-muted); white-space: nowrap; }
+.resource-table .res-subjects { color: var(--ink-soft); font-size: var(--text-xs); }
+@media (max-width: 700px) { .resource-table .col-hide-sm { display: none; } }
+
 /* ----------------------------------------------------------------------------
    14. TABS (calculator section, grade columns, etc.)
    -------------------------------------------------------------------------- */
@@ -636,8 +653,11 @@ table.data code { white-space: nowrap; }
 
 @media (max-width: 860px) {
   .site-nav__links { display: none; }
-  .nav-burger { display: inline-flex; }
-  .nav-mobile-only { display: inline-flex; margin-right: 2px; }
+  .site-nav__inner { gap: var(--space-2); }
+  /* Hamburger on the LEFT, brand next to it, palette pushed to the right. */
+  .nav-burger { display: inline-flex; order: -2; }
+  .site-nav__brand { order: -1; margin-right: auto; }
+  .nav-mobile-only { display: inline-flex; order: 0; }
 }
 
 /* ----------------------------------------------------------------------------
