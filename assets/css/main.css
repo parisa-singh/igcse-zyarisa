@@ -217,7 +217,11 @@ pre code { background: none; border: 0; padding: 0; }
 .section { padding-block: var(--space-8); }
 .section--tight { padding-block: var(--space-6); }
 .section--hero { padding-block: var(--space-9) var(--space-8); }
-.section + .section { padding-top: 0; }
+/* Visual separator between adjacent same-background sections so headings never
+   butt up against the section above. Colored bands already read as separate. */
+.section + .section:not([style*="background"]) {
+  border-top: 1.5px solid color-mix(in srgb, var(--rule) 55%, transparent);
+}
 
 /* ----------------------------------------------------------------------------
    5. EYEBROW & SECTION RULE
@@ -765,9 +769,9 @@ section[id], header[id] { scroll-margin-top: calc(var(--nav-h) + 18px); }
 .theme-swatch-item.is-active .theme-swatch-name { font-weight: 600; }
 
 /* ---- Page section sidebar (ToC) ---------------------------------------- */
-/* Mobile / tablet default: a floating popover toggled by the FAB. */
+/* Mobile / tablet default: a floating popover (left) toggled by the FAB. */
 .page-toc {
-  position: fixed; right: 16px; bottom: 76px; z-index: 90;
+  position: fixed; left: 16px; bottom: 76px; z-index: 90;
   width: min(280px, 82vw); max-height: 62vh; overflow-y: auto;
   background: var(--paper); border: 1.5px solid var(--rule);
   border-radius: var(--radius-lg); box-shadow: var(--shadow);
@@ -790,7 +794,7 @@ section[id], header[id] { scroll-margin-top: calc(var(--nav-h) + 18px); }
 .page-toc__bar { display: none; }
 
 .page-toc-fab {
-  position: fixed; right: 16px; bottom: 16px; z-index: 91;
+  position: fixed; left: 16px; bottom: 16px; z-index: 91;
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 14px; border-radius: var(--radius-pill);
   background: var(--accent); color: var(--paper); border: 0; cursor: pointer;
@@ -800,20 +804,39 @@ section[id], header[id] { scroll-margin-top: calc(var(--nav-h) + 18px); }
 .page-toc-fab span { display: inline-block; transition: transform .2s ease; }
 .page-toc.is-open ~ .page-toc-fab span { transform: rotate(90deg); }
 
-/* Desktop: a fixed right rail; content + nav reserve room so nothing overlaps. */
+/* Desktop: a fixed LEFT rail; content + nav reserve room so nothing overlaps. */
 @media (min-width: 1200px) {
-  html.has-toc body { padding-right: var(--toc-w); }
-  html.has-toc .site-nav { padding-right: var(--toc-w); }
-  html.has-toc .site-footer { margin-right: calc(-1 * var(--toc-w)); padding-right: calc(var(--space-5) + var(--toc-w)); }
+  html.has-toc body { padding-left: var(--toc-w); }
+  html.has-toc .site-nav { padding-left: var(--toc-w); }
+  html.has-toc .site-footer { margin-left: calc(-1 * var(--toc-w)); padding-left: calc(var(--space-5) + var(--toc-w)); }
   .page-toc {
-    display: block; position: fixed; top: calc(var(--nav-h) + 30px); right: 0; bottom: auto;
+    display: block; position: fixed; top: calc(var(--nav-h) + 30px); left: 0; right: auto; bottom: auto;
     width: var(--toc-w); max-height: calc(100vh - var(--nav-h) - 60px);
-    background: none; border: 0; border-left: 1.5px solid var(--rule);
+    background: none; border: 0; border-right: 1.5px solid var(--rule);
     border-radius: 0; box-shadow: none; padding: var(--space-2) var(--space-5);
   }
   .page-toc.is-open { animation: none; }
   .page-toc-fab { display: none; }
 }
+
+/* ---- Top scroll-progress bar + back-to-top button ---------------------- */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 200;
+  background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+  transition: width .08s linear; pointer-events: none;
+}
+.back-to-top {
+  position: fixed; right: 16px; bottom: 16px; z-index: 91;
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1.5px solid var(--rule); background: var(--paper); color: var(--accent);
+  font-size: 20px; line-height: 1; cursor: pointer; box-shadow: var(--shadow);
+  display: inline-flex; align-items: center; justify-content: center;
+  opacity: 0; transform: translateY(12px) scale(.9); pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease, border-color .18s ease, background-color .18s ease;
+}
+.back-to-top.is-visible { opacity: 1; transform: none; pointer-events: auto; }
+.back-to-top:hover { border-color: var(--accent); background: var(--accent); color: var(--paper); }
+@media print { .scroll-progress, .back-to-top { display: none !important; } }
 
 /* ---- Scroll-reveal ------------------------------------------------------ */
 .reveal { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1); }

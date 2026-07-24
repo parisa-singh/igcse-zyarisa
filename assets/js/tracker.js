@@ -68,7 +68,7 @@
     try {
       localStorage.setItem(storageKey(state.slug), JSON.stringify(payload));
       localStorage.setItem('igcse-tracker-last', state.slug);
-      if (el.saveInfo) el.saveInfo.textContent = 'Last saved: ' + timeStr();
+      if (el.saveInfo) el.saveInfo.innerHTML = '<span class="tk-saved-tick">✓</span> Saved · ' + timeStr();
     } catch (e) {
       if (el.saveInfo) el.saveInfo.textContent = 'Could not save (storage full?).';
     }
@@ -551,8 +551,100 @@
     state.ratings = stored.ratings && stored.ratings.topic ? stored.ratings : { topic: {}, objective: {} };
     state.view = 'topic'; state.filter = 'all'; state.tier = 'all'; state.collapsed = {};
     hidePreview(); clearStatus(); render();
-    if (el.saveInfo && stored.savedAt) el.saveInfo.textContent = 'Last saved: ' + new Date(stored.savedAt).toLocaleString();
+    if (el.saveInfo && stored.savedAt) el.saveInfo.innerHTML = '<span class="tk-saved-tick">✓</span> Saved · ' + new Date(stored.savedAt).toLocaleString();
     return true;
+  }
+
+  /* ---- library: all saved trackers in this browser ----------------------- */
+  function listSavedTrackers() {
+    var out = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf('igcse-tracker-') === 0 && k !== 'igcse-tracker-last') {
+        try {
+          var data = JSON.parse(localStorage.getItem(k));
+          if (data && data.structure) out.push({ key: k, slug: data.slug || k.replace('igcse-tracker-', ''), data: data });
+        } catch (e) { /* skip corrupt entry */ }
+      }
+    }
+    out.sort(function (a, b) { return String(b.data.savedAt || '').localeCompare(String(a.data.savedAt || '')); });
+    return out;
+  }
+
+  // Topic-level progress summary for a stored tracker object.
+  function summarizeTopic(data) {
+    var c = { green: 0, amber: 0, red: 0, unrated: 0, total: 0 };
+    var ratings = (data.ratings && data.ratings.topic) || {};
+    (data.structure.units || []).forEach(function (u) {
+      (u.topics || []).forEach(function (t) {
+        c.total++;
+        var s = (ratings[t.id] && ratings[t.id].status) || 'unrated';
+        c[s] = (c[s] || 0) + 1;
+      });
+    });
+    return c;
+  }
+
+  function deleteTracker(slug) {
+    localStorage.removeItem(storageKey(slug));
+    if (localStorage.getItem('igcse-tracker-last') === slug) localStorage.removeItem('igcse-tracker-last');
+    if (state.slug === slug) {
+      state.slug = null; state.structure = null; state.meta = null;
+      renderEmpty();
+      if (el.saveInfo) el.saveInfo.textContent = 'No tracker open.';
+    }
+  }
+
+  function openLibrary() {
+    var list = listSavedTrackers();
+    var body;
+    if (!list.length) {
+      body = '<p class="u-sm u-muted">No saved trackers yet. Load a syllabus above to start one — it saves here automatically, and stays saved even after you close the tab.</p>';
+    } else {
+      body = '<p class="u-sm u-muted" style="margin-top:0">Everything you’ve started on this browser. Progress is saved automatically — pick up any of them where you left off.</p>' +
+        '<ul class="tk-filelist">' + list.map(function (item) {
+          var c = summarizeTopic(item.data);
+          var pct = function (n) { return c.total ? Math.round(n / c.total * 100) : 0; };
+          var pg = pct(c.green), pa = pct(c.amber), pr = pct(c.red), pu = Math.max(0, 100 - pg - pa - pr);
+          var isCurrent = state.slug === item.slug;
+          var when = item.data.savedAt ? new Date(item.data.savedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+          var name = (item.data.meta && item.data.meta.name) || item.slug;
+          var code = (item.data.meta && item.data.meta.code) ? ' <span class="u-mono u-xs u-muted">' + esc(item.data.meta.code) + '</span>' : '';
+          return '<li style="align-items:stretch">' +
+            '<div style="flex:1;min-width:0">' +
+              '<div class="name">' + esc(name) + code + (isCurrent ? ' <span class="badge badge--accent">current</span>' : '') + '</div>' +
+              '<div class="tk-progress__bar" style="height:9px;margin:7px 0;max-width:320px">' +
+                '<div class="tk-progress__seg tk-progress__seg--green" style="width:' + pg + '%"></div>' +
+                '<div class="tk-progress__seg tk-progress__seg--amber" style="width:' + pa + '%"></div>' +
+                '<div class="tk-progress__seg tk-progress__seg--red" style="width:' + pr + '%"></div>' +
+                '<div class="tk-progress__seg tk-progress__seg--unrated" style="width:' + pu + '%"></div>' +
+              '</div>' +
+              '<div class="meta">' + pg + '% green · ' + c.total + ' topics · saved ' + when + '</div>' +
+            '</div>' +
+            '<div class="tk-btn-col" style="justify-content:center">' +
+              '<button class="btn btn--outline btn--sm" data-open-tr="' + esc(item.slug) + '">Open</button>' +
+              '<button class="btn btn--ghost btn--sm" data-del-tr="' + esc(item.slug) + '" title="Delete this tracker">Delete</button>' +
+            '</div>' +
+          '</li>';
+        }).join('') + '</ul>';
+    }
+    body += '<div class="btn-row" style="margin-top:var(--space-4)"><button class="btn btn--ghost btn--sm" id="tk-lib-import">Load a downloaded .json file…</button>' +
+      (window.Drive && window.Drive.getClientId() ? '<button class="btn btn--ghost btn--sm" id="tk-lib-drive">Load from Google Drive…</button>' : '') + '</div>';
+
+    openModal('My trackers', body);
+    el.modalContent.querySelectorAll('[data-open-tr]').forEach(function (b) {
+      b.addEventListener('click', function () { if (openStored(b.getAttribute('data-open-tr'))) { closeModal(); if (el.subjectSelect) el.subjectSelect.value = ''; status('Opened your saved tracker.', 'ok'); } });
+    });
+    el.modalContent.querySelectorAll('[data-del-tr]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var slug = b.getAttribute('data-del-tr');
+        var nm = slug;
+        list.forEach(function (it) { if (it.slug === slug && it.data.meta) nm = it.data.meta.name; });
+        if (confirm('Delete the tracker for "' + nm + '"? This can’t be undone (export it first if you want a backup).')) { deleteTracker(slug); openLibrary(); }
+      });
+    });
+    var imp = $('tk-lib-import'); if (imp) imp.addEventListener('click', function () { closeModal(); $('tk-load-input').click(); });
+    var dr = $('tk-lib-drive'); if (dr) dr.addEventListener('click', function () { closeModal(); driveLoad(); });
   }
 
   /* ---- export / import ---------------------------------------------------- */
@@ -712,6 +804,7 @@
     if (el.tierFilter) el.tierFilter.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { state.tier = b.getAttribute('data-tier'); renderTierFilter(); renderProgress(); renderTable(); }); });
 
     // Save controls
+    if ($('tk-btn-library')) $('tk-btn-library').addEventListener('click', openLibrary);
     if ($('tk-btn-download')) $('tk-btn-download').addEventListener('click', exportJSON);
     if ($('tk-load-input')) $('tk-load-input').addEventListener('change', function (e) { importJSON(e.target.files[0]); });
     if ($('tk-btn-load')) $('tk-btn-load').addEventListener('click', function () { $('tk-load-input').click(); });

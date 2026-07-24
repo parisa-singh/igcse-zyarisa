@@ -116,7 +116,38 @@
     });
   }
 
-  function init() { buildToc(); setupReveal(); }
+  /* ---- 3. Top scroll-progress bar + back-to-top ------------------------- */
+  function setupScrollUI() {
+    if (document.querySelector('.scroll-progress')) return;
+    var bar = document.createElement('div');
+    bar.className = 'scroll-progress';
+    document.body.appendChild(bar);
+
+    var toTop = document.createElement('button');
+    toTop.className = 'back-to-top';
+    toTop.setAttribute('aria-label', 'Back to top');
+    toTop.innerHTML = '↑';
+    toTop.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+    document.body.appendChild(toTop);
+
+    var ticking = false;
+    function update() {
+      var docH = document.documentElement.scrollHeight - window.innerHeight;
+      var pct = docH > 0 ? (window.scrollY / docH) * 100 : 0;
+      bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+      toTop.classList.toggle('is-visible', window.scrollY > 480);
+      ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
+    }, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
+  }
+
+  function init() { buildToc(); setupReveal(); setupScrollUI(); }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
