@@ -4,84 +4,99 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>IGCSE Playbook — your study command center</title>
-  <meta name="description" content="A personal IGCSE planning tool: your traffic-light tracker, study system, resources, and past-paper workflow — everything an older sister wishes she'd had. Cambridge IGCSE, exams May/June 2028.">
+  <meta name="description" content="A personal, playful IGCSE planning tool: your traffic-light tracker, study system, resources, and past-paper workflow. Cambridge IGCSE, exams May/June 2028.">
   <link rel="stylesheet" href="/igcse-zyarisa/assets/css/main.css">
   <script src="/igcse-zyarisa/assets/js/theme.js"></script>
 </head>
 <body data-no-toc>
   <div id="nav-container"></div>
 
-  <!-- HERO (compact) -->
-  <header class="section section--tight" style="padding-top: var(--space-8);">
+  <!-- GREETING + COUNTDOWN -->
+  <header class="section section--tight" style="padding-top: var(--space-7);">
     <div class="container">
-      <span class="eyebrow">Cambridge IGCSE · Exams May / June 2028</span>
-      <h1 class="hero-title" style="max-width: 16ch;">Your IGCSE command center.</h1>
-      <p class="lead" style="max-width: 52ch; margin-top: var(--space-3);">
-        Everything I wish I'd had in Grade 9 — a tracker, a system, and the exact resources, in one place.
-        Pick where to start. 👇
-      </p>
-      <div class="btn-row" style="margin-top: var(--space-5);">
-        <a class="btn btn--primary" href="/igcse-zyarisa/tracker/index.html">Open your tracker →</a>
-        <a class="btn btn--outline" href="/igcse-zyarisa/study-system.html">How to study →</a>
-      </div>
+      <span class="countdown-pill">⭐ Grade 9 · <strong id="cd-days">—</strong>&nbsp;days to your exams</span>
+      <h1 class="greeting" id="greeting" style="max-width: 18ch;">Hey — ready to make some green?</h1>
+      <p class="lead" style="max-width: 50ch;">Your whole IGCSE, in one place. Pick a card and go. 👇</p>
     </div>
   </header>
 
-  <!-- QUICK ACTIONS -->
+  <!-- PROGRESS HERO (reads your real tracker) -->
   <section class="section section--tight">
     <div class="container">
-      <div class="hub-grid">
-        <a class="hub-tile hub-tile--warm" href="/igcse-zyarisa/tracker/index.html">
-          <span class="hub-tile__icon">🚦</span>
-          <h3>Traffic-light tracker</h3>
-          <p>Load a syllabus, rate every topic, watch red turn green.</p>
-          <span class="hub-tile__go">Open tracker →</span>
+      <div class="play-hero">
+        <div class="ring" id="ring" style="--p:0">
+          <div class="ring__inner">
+            <div class="ring__pct" id="ring-pct">—</div>
+            <div class="ring__cap">green</div>
+          </div>
+        </div>
+        <div class="play-hero__msg">
+          <h2 id="hero-title">Start your first tracker</h2>
+          <p id="hero-sub">Load a syllabus, rate each topic red / amber / green, and watch this ring fill up over the next two years. It saves automatically.</p>
+          <div class="btn-row">
+            <a class="btn btn--primary" id="hero-cta" href="/igcse-zyarisa/tracker/index.html">Start a tracker →</a>
+            <a class="btn btn--ghost" id="hero-cta2" href="/igcse-zyarisa/tracker/index.html" style="display:none">Switch subject</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BIG ACTION CARDS -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="play-grid">
+        <a class="play-card play-card--tracker" href="/igcse-zyarisa/tracker/index.html">
+          <span class="play-card__emoji">🚦</span>
+          <h3>Tracker</h3>
+          <p>Rate every topic. Turn red into green.</p>
+          <span class="play-card__go">Open →</span>
         </a>
-        <a class="hub-tile" href="/igcse-zyarisa/study-system.html">
-          <span class="hub-tile__icon">🧭</span>
+        <a class="play-card play-card--study" href="/igcse-zyarisa/study-system.html">
+          <span class="play-card__emoji">🧭</span>
           <h3>Study system</h3>
-          <p>The method, Grade 9 vs 10, command words, weekly plans.</p>
-          <span class="hub-tile__go">See the system →</span>
+          <p>The method, Grade 9 vs 10, command words.</p>
+          <span class="play-card__go">Learn it →</span>
         </a>
-        <a class="hub-tile" href="/igcse-zyarisa/past-papers.html">
-          <span class="hub-tile__icon">📝</span>
-          <h3>Past-paper workflow</h3>
-          <p>The 6 steps, mark-scheme symbols, where marks get lost.</p>
-          <span class="hub-tile__go">Learn the workflow →</span>
+        <a class="play-card play-card--papers" href="/igcse-zyarisa/past-papers.html">
+          <span class="play-card__emoji">📝</span>
+          <h3>Past papers</h3>
+          <p>The 6-step workflow that actually works.</p>
+          <span class="play-card__go">See how →</span>
         </a>
-        <a class="hub-tile" href="/igcse-zyarisa/resources.html">
-          <span class="hub-tile__icon">🔗</span>
+        <a class="play-card play-card--resources" href="/igcse-zyarisa/resources.html">
+          <span class="play-card__emoji">🔗</span>
           <h3>Resources</h3>
-          <p>Every archive, channel, and site — labelled free or paid.</p>
-          <span class="hub-tile__go">Browse resources →</span>
+          <p>Every archive, channel & site. Free or paid.</p>
+          <span class="play-card__go">Browse →</span>
         </a>
       </div>
     </div>
   </section>
 
-  <!-- YOUR PATH -->
+  <!-- PATH -->
   <section class="section section--tight">
     <div class="container">
       <div class="section-head" style="margin-bottom: var(--space-5);">
         <span class="eyebrow">Two years, three phases</span>
-        <h2>Your path to 2028</h2>
+        <h2>Where you're headed</h2>
       </div>
       <div class="path">
         <div class="path__node path__node--now">
           <span class="path__dot"></span>
           <span class="path__tag">You are here · Grade 9</span>
           <h4>Build understanding</h4>
-          <p>Learn the content properly. Topic questions, not full papers. Get your tracker mostly amber/green.</p>
+          <p>Learn the content. Topic questions, not full papers. Get the tracker mostly amber &amp; green.</p>
         </div>
         <div class="path__node">
           <span class="path__tag">Grade 10</span>
           <h4>Turn it into marks</h4>
-          <p>Full timed papers, mark-scheme technique, examiner reports, mocks. Attack your red topics.</p>
+          <p>Full timed papers, mark-scheme technique, examiner reports, mocks. Attack your reds.</p>
         </div>
         <div class="path__node">
           <span class="path__tag">May / June 2028</span>
           <h4>Exams</h4>
-          <p>Final weeks: past papers and targeted revision only. You'll have done the work by then.</p>
+          <p>Final weeks: past papers and targeted revision only. You'll be ready.</p>
         </div>
       </div>
     </div>
@@ -92,7 +107,7 @@
     <div class="container">
       <div class="section-head" style="margin-bottom: var(--space-5);">
         <span class="eyebrow">Nine subjects</span>
-        <h2>Jump to a subject</h2>
+        <h2>Jump in</h2>
       </div>
       <div class="subject-strip">
         <a class="subject-tile" href="/igcse-zyarisa/subjects/international-math.html"><span class="code">0607</span><span class="name">International Maths</span></a>
@@ -111,23 +126,13 @@
     </div>
   </section>
 
-  <!-- NOTE + PUSH (compact) -->
+  <!-- SHORT NOTE -->
   <section class="section section--tight">
     <div class="container">
-      <div class="grid-2">
-        <div class="card card--warm">
-          <span class="eyebrow">From me</span>
-          <p style="margin-top: var(--space-2);">I spent six months making pretty planners before I found the topic checklist hiding in the back of every Cambridge syllabus. This site is me handing you that — and everything else — on day one instead of month six.</p>
-          <p class="u-sm u-muted u-mb-0">— your sister</p>
-        </div>
-        <div class="card">
-          <span class="eyebrow">When you need a push</span>
-          <ul class="u-sm" style="margin-top: var(--space-2); margin-bottom: 0;">
-            <li><a href="https://www.youtube.com/watch?v=ukLnPbIffxE" target="_blank" rel="noopener">Ali Abdaal — How to Study (evidence-based)</a> · watch Week 1</li>
-            <li><a href="https://www.reddit.com/r/igcse/" target="_blank" rel="noopener">r/IGCSE</a> · honest advice from students doing it now</li>
-            <li><a href="/igcse-zyarisa/resources.html">More, curated by subject →</a></li>
-          </ul>
-        </div>
+      <div class="card card--warm" style="border-radius: 20px;">
+        <span class="eyebrow">From me 💛</span>
+        <p style="margin-top: var(--space-2); margin-bottom: var(--space-2);">I spent six months making pretty planners before I found the topic checklist hiding in the back of every Cambridge syllabus. This is me handing you that — and everything else — on day one instead of month six.</p>
+        <p class="u-sm u-muted u-mb-0">— your sister</p>
       </div>
     </div>
   </section>
@@ -147,5 +152,57 @@
   </footer>
 
   <script src="/igcse-zyarisa/assets/js/nav.js"></script>
+  <script>
+    (function () {
+      // Live countdown to the exam series (first IGCSE papers ~ early May 2028).
+      var exam = new Date('2028-05-04T00:00:00');
+      var days = Math.max(0, Math.ceil((exam - new Date()) / 86400000));
+      var cd = document.getElementById('cd-days');
+      if (cd) cd.textContent = days.toLocaleString();
+
+      // Read the most-recent tracker from localStorage and reflect real progress.
+      function loadLast() {
+        var last = localStorage.getItem('igcse-tracker-last');
+        var raw = last && localStorage.getItem('igcse-tracker-' + last);
+        if (!raw) {
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (k && k.indexOf('igcse-tracker-') === 0 && k !== 'igcse-tracker-last') { raw = localStorage.getItem(k); break; }
+          }
+        }
+        try { return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+      }
+      function summarize(d) {
+        var t = 0, g = 0, r = (d.ratings && d.ratings.topic) || {};
+        (d.structure.units || []).forEach(function (u) {
+          (u.topics || []).forEach(function (tp) { t++; if ((r[tp.id] && r[tp.id].status) === 'green') g++; });
+        });
+        return { total: t, green: g, pct: t ? Math.round(g / t * 100) : 0 };
+      }
+      function message(pct) {
+        if (pct === 0) return "Every green starts out red. Let's begin. 🌱";
+        if (pct < 30) return "Nice start — keep chipping away. 💪";
+        if (pct < 70) return "You're building real momentum. Keep going! 🚀";
+        return "You're on fire — look how far you've come. 🔥";
+      }
+
+      var d = loadLast();
+      if (d && d.structure) {
+        var s = summarize(d);
+        var name = (d.meta && d.meta.name) || 'your subject';
+        document.getElementById('ring-pct').textContent = s.pct + '%';
+        // animate the ring fill
+        var ring = document.getElementById('ring');
+        setTimeout(function () { ring.style.setProperty('--p', s.pct); }, 150);
+        document.getElementById('hero-title').textContent = s.pct + '% green in ' + name;
+        document.getElementById('hero-sub').textContent = message(s.pct) + ' ' + s.green + ' of ' + s.total + ' topics are solid.';
+        var cta = document.getElementById('hero-cta');
+        cta.textContent = 'Open ' + name + ' →';
+        document.getElementById('hero-cta2').style.display = '';
+      } else {
+        document.getElementById('ring-pct').textContent = '0%';
+      }
+    })();
+  </script>
 </body>
 </html>
