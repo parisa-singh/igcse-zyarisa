@@ -197,3 +197,7 @@
 - 2026-07-24 (update) — Added 3Blue1Brown (0607), CS with SKS + @TheCSClassroom caveat (0478), and the
   Text-analysis sites group for Literature (LitCharts / SparkNotes / GradeSaver, with caveat). Propagated
   to resources.html and the international-math, computer-science, and english-literature subject pages.
+- 2026-07-24 (links) — Official Cambridge syllabus links added: a top callout on the Subjects hub
+  (→ Cambridge IGCSE subjects page) and a "📄 Official syllabus" button in every subject page hero
+  (deep-linked per subject via the cambridge-igcse-<slug>-<code> pattern; verify Literature 0475 &
+  Psychology 0980, which only returned curl 500s that read as bot-blocking rather than 404s).

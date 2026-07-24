@@ -99,16 +99,25 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
 - External links: `target="_blank" rel="noopener"`. Uncertain YouTube URLs use search-query links
   (honest per spec's "search for X" pattern) rather than fabricated channel/video IDs.
 
-## Design direction shift (in progress)
-- User feedback: site felt "too wordy"; wants it to feel like an INTERACTIVE PLANNING TOOL a
-  student would enjoy using often. HOME PAGE redesigned as a dashboard hub (index.html, data-no-toc):
-  quick-action tiles (.hub-tile/.hub-grid), 2-year path timeline (.path), subject strip (.subject-strip),
-  short note. New components in main.css §20. This is the reference for the new look — pending user OK to
-  roll the same tool-style treatment across study-system / subjects / past-papers / resources.
-- resources.md is the canonical resource source (keep in sync). Access badges green/amber/red.
-- Syllabus link: currently only a top callout on subjects/index.html → Cambridge official subjects page.
-  NOT yet a per-subject-page hero button (offer to add; would need per-subject Cambridge URLs, verify slugs).
+## Design direction — DECIDED: playful / gamified
+- User rejected the plain dashboard; chose **playful / gamified** (bright, rounded, warm, motivating —
+  Duolingo-ish but professional). HOME (index.html, data-no-toc) rebuilt in this style:
+  - Live **exam countdown** to 2028-05-04 (inline script).
+  - **Progress ring** (.ring, conic-gradient donut) that READS the real tracker from localStorage
+    (`igcse-tracker-last` → its object), computes topic-level green %, animates the fill, and shows
+    encouraging messages that scale with pct. Falls back to "start your first tracker" when none.
+  - Big rounded colorful **action cards** (.play-card--tracker/study/papers/resources), .play-grid.
+  - Kept .path timeline + .subject-strip; note trimmed.
+  - Components: main.css **§21** (playful) + §20 (hub tiles/path/strip, still used).
+- **PENDING user OK**: roll the playful style across study-system / subjects / past-papers / resources
+  (bigger colorful cards, more visual, less prose). Home is the reference.
+- Syllabus links: top callout on subjects/index.html AND a "📄 Official syllabus (Cambridge)" btn in
+  EVERY subject page hero (after the h1). URLs = cambridge-igcse-<slug>-<code> pattern; verified 200 for
+  physics/int-math(international-mathematics)/cs/business/economics/french; english uses
+  **english-first-language-0500**; literature (literature-in-english-0475) & psychology (psychology-0980)
+  only got curl 500s (bot-block, not confirmed) — VERIFY these two in a browser.
 - Hamburger moved to LEFT on mobile (order: -2); ToC/FAB already left.
+- resources.md is the canonical resource source (keep in sync). Access badges green/amber/red.
 
 ## Tracker architecture notes (for future edits)
 - Persistence: ONE object per subject at localStorage `igcse-tracker-{slug}` = {meta, structure, ratings, savedAt}.
@@ -132,4 +141,13 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
   general IGCSE knowledge — accurate at a high level; verify exact 2028-syllabus specifics against Cambridge PDFs.
 
 ## Next up
-- Hand off for a browser test pass via Live Server (see Known issues). Then push to `parisa-singh.github.io` repo.
+- Awaiting user OK to roll the playful/gamified style (see "Design direction") across the remaining
+  content pages: study-system.html, subjects/index.html, past-papers.html, resources.html, and the
+  subject pages — bigger colorful cards, more visual, less prose, keep the resource tables.
+- Then: a real-browser QA pass of the playful home progress-ring (localStorage read) + countdown.
+
+## Live deploy status
+- Repo **parisa-singh/igcse-zyarisa** (public), Pages from main/root.
+  Live: https://parisa-singh.github.io/igcse-zyarisa/  · local `origin` set to the same repo.
+- gh active account is **parisa-singh** (switched from parisa-eyezense). Commit identity:
+  parisa-singh / personal123777@gmail.com. All work committed & pushed through the playful home redesign.
