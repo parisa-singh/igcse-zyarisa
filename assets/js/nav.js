@@ -42,6 +42,26 @@
 
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
+  // Build the palette theme picker: a 🎨 button + dropdown of circular color swatches.
+  function paletteMenu(active) {
+    var themes = window.THEMES || ['light', 'dark', 'high-contrast', 'vintage'];
+    var swatches = window.THEME_SWATCHES || {};
+    var labels = window.THEME_LABELS || {};
+    var items = themes.map(function (t) {
+      var c = swatches[t] || ['#ccc', '#999', '#bbb', '#aaa'];
+      var grad = 'conic-gradient(' + c[0] + ' 0% 25%, ' + c[1] + ' 25% 50%, ' + c[2] + ' 50% 75%, ' + c[3] + ' 75% 100%)';
+      return '<button class="theme-swatch-item' + (t === active ? ' is-active' : '') + '" role="menuitemradio" aria-checked="' + (t === active ? 'true' : 'false') + '" data-set-theme="' + t + '">' +
+        '<span class="theme-swatch" style="background:' + grad + '"></span>' +
+        '<span class="theme-swatch-name">' + esc(labels[t] || t) + '</span>' +
+        '<span class="theme-swatch-check">✓</span>' +
+      '</button>';
+    }).join('');
+    return '<div class="theme-menu" data-theme-menu>' +
+        '<button class="theme-palette-btn" data-theme-btn aria-haspopup="true" aria-expanded="false" title="Change theme" aria-label="Change theme">🎨</button>' +
+        '<div class="theme-menu__panel" role="menu"><div class="theme-menu__label">Theme</div>' + items + '</div>' +
+      '</div>';
+  }
+
   function buildOverlay() {
     var path = currentPath();
     var main = LINKS.concat([{ href: '/igcse-zyarisa/tracker/index.html', label: 'Tracker' }]).map(function (l) {
@@ -87,37 +107,64 @@
       '</div>';
     var tracker = '<a class="btn btn--primary site-nav__cta' + (path.indexOf('/igcse-zyarisa/tracker/') === 0 ? ' is-active' : '') +
       '" href="/igcse-zyarisa/tracker/index.html">Tracker</a>';
-    var themeBtn = '<button class="theme-toggle" data-theme-toggle title="Theme: ' + esc(label) +
-      '" aria-label="Switch theme (current: ' + esc(label) + ')">' + icon + '</button>';
+    var themeBtn = paletteMenu(theme);
     var burger = '<button class="nav-burger" data-burger aria-label="Open menu" aria-expanded="false"><span></span></button>';
 
     container.innerHTML =
       '<nav class="site-nav"><div class="site-nav__inner">' +
         '<a class="site-nav__brand" href="/igcse-zyarisa/index.html"><span class="brand-mark">◆</span> IGCSE&nbsp;Playbook</a>' +
         '<div class="site-nav__links">' + linksHtml + dropdown + tracker + themeBtn + '</div>' +
-        themeBtn + /* mobile theme toggle sits next to burger */
+        '<span class="nav-mobile-only">' + themeBtn + '</span>' + /* palette next to burger on mobile */
         burger +
       '</div></nav>' +
       buildOverlay();
 
     wire(container);
+    loadEnhance();
+  }
+
+  // Load the shared page-enhancement script (section ToC + scroll animations) once.
+  function loadEnhance() {
+    if (document.querySelector('script[data-enhance]')) return;
+    var s = document.createElement('script');
+    s.src = '/igcse-zyarisa/assets/js/enhance.js';
+    s.setAttribute('data-enhance', '1');
+    s.defer = true;
+    document.body.appendChild(s);
   }
 
   function wire(container) {
-    // Theme toggles (there may be two — desktop + mobile)
-    container.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        if (window.cycleTheme) window.cycleTheme();
+    // Palette theme menus (there may be two — desktop + mobile)
+    var menus = container.querySelectorAll('[data-theme-menu]');
+    menus.forEach(function (menu) {
+      var btn = menu.querySelector('[data-theme-btn]');
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var open = menu.classList.toggle('is-open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        // Close the other menu if open
+        menus.forEach(function (m) { if (m !== menu) { m.classList.remove('is-open'); m.querySelector('[data-theme-btn]').setAttribute('aria-expanded', 'false'); } });
+      });
+      menu.querySelectorAll('[data-set-theme]').forEach(function (item) {
+        item.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (window.setTheme) window.setTheme(item.getAttribute('data-set-theme'));
+          menu.classList.remove('is-open');
+          btn.setAttribute('aria-expanded', 'false');
+        });
       });
     });
+    // Close any open palette menu on outside click
+    document.addEventListener('click', function (e) {
+      menus.forEach(function (m) { if (!m.contains(e.target)) { m.classList.remove('is-open'); var b = m.querySelector('[data-theme-btn]'); if (b) b.setAttribute('aria-expanded', 'false'); } });
+    });
+    // Keep the active swatch in sync when the theme changes
     document.addEventListener('themechange', function (e) {
       var t = e.detail;
-      var icon = (window.THEME_ICONS && window.THEME_ICONS[t]) || '☀️';
-      var label = (window.THEME_LABELS && window.THEME_LABELS[t]) || 'Light';
-      container.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
-        btn.textContent = icon;
-        btn.setAttribute('title', 'Theme: ' + label);
-        btn.setAttribute('aria-label', 'Switch theme (current: ' + label + ')');
+      container.querySelectorAll('[data-set-theme]').forEach(function (item) {
+        var on = item.getAttribute('data-set-theme') === t;
+        item.classList.toggle('is-active', on);
+        item.setAttribute('aria-checked', on ? 'true' : 'false');
       });
     });
 
