@@ -99,6 +99,17 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
 - External links: `target="_blank" rel="noopener"`. Uncertain YouTube URLs use search-query links
   (honest per spec's "search for X" pattern) rather than fabricated channel/video IDs.
 
+## Design direction shift (in progress)
+- User feedback: site felt "too wordy"; wants it to feel like an INTERACTIVE PLANNING TOOL a
+  student would enjoy using often. HOME PAGE redesigned as a dashboard hub (index.html, data-no-toc):
+  quick-action tiles (.hub-tile/.hub-grid), 2-year path timeline (.path), subject strip (.subject-strip),
+  short note. New components in main.css §20. This is the reference for the new look — pending user OK to
+  roll the same tool-style treatment across study-system / subjects / past-papers / resources.
+- resources.md is the canonical resource source (keep in sync). Access badges green/amber/red.
+- Syllabus link: currently only a top callout on subjects/index.html → Cambridge official subjects page.
+  NOT yet a per-subject-page hero button (offer to add; would need per-subject Cambridge URLs, verify slugs).
+- Hamburger moved to LEFT on mobile (order: -2); ToC/FAB already left.
+
 ## Tracker architecture notes (for future edits)
 - Persistence: ONE object per subject at localStorage `igcse-tracker-{slug}` = {meta, structure, ratings, savedAt}.
   ratings has independent `topic` and `objective` maps (rowId → {status, notes, updated}). Last subject at `igcse-tracker-last`.
