@@ -63,6 +63,20 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
 
 ### BUILD COMPLETE — all files done. All JS passes `node --check`; all tracker DOM IDs verified present.
 
+## Enhancements added (live)
+- **assets/js/enhance.js** (NEW) — injected by nav.js on every page. Auto-builds an "On this page"
+  section sidebar from `body > section/header` elements that contain an `<h2>` (hero h1 skipped),
+  with scroll-spy; right rail ≥1200px (body+nav+footer reserve `--toc-w:240px`), floating popover +
+  FAB below that. Also does scroll-reveal (`.reveal`/`.is-visible`) on cards/sections/lists, skipped
+  under prefers-reduced-motion, and shows above-the-fold items immediately (no flash). Pages opt out
+  with `<body data-no-toc>` (tracker does, to keep its own two-col layout).
+- **Palette theme picker** — theme.js adds THEME_SWATCHES + setTheme(); nav.js renders a 🎨 button →
+  dropdown of 4 circular conic-gradient swatches (direct select, not cycle). Desktop palette lives in
+  `.site-nav__links`; a second `.nav-mobile-only` copy sits by the burger for ≤860px.
+- **main.css §19** — palette menu, page-toc rail/popover/FAB, `.reveal`, nav-link underline motion,
+  fluid `clamp()` type + section spacing, readable `max-width:74ch` on prose, small-screen tweaks.
+- All responsive: phone/tablet/desktop verified in CSS breakpoints (860px nav, 1200px ToC rail, 520px stacking).
+
 ## Decisions & conventions established
 - Files live at repo root (working dir IS the project root; no extra `igcse-site/` wrapper).
 - Brand name in nav/footer: "IGCSE Playbook" (◆ mark in --accent).
