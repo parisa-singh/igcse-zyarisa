@@ -11,6 +11,7 @@
 </head>
 <body data-no-toc>
   <div id="nav-container"></div>
+  <div id="tk-sync-bar" class="tk-syncbar" style="display:none"></div>
 
   <header class="section section--tight">
     <div class="container">
@@ -65,10 +66,6 @@
           <p class="u-xs u-muted" style="margin:var(--space-2) 0 0">Saved automatically in this browser — your progress stays even after you close the tab.</p>
         </div>
 
-        <div class="tk-panel" id="tk-sync-area" style="display:none">
-          <span class="tk-panel__label">☁ Sync across devices</span>
-          <div id="tk-sync-body"></div>
-        </div>
         <div class="tk-panel">
           <span class="tk-panel__label">Current subject</span>
           <h3 id="tk-subject-name" style="margin:0">—</h3>
@@ -132,6 +129,11 @@
   <!-- MODAL -->
   <div class="tk-modal-backdrop" id="tk-modal-backdrop">
     <div class="tk-modal" id="tk-modal-content"></div>
+  </div>
+
+  <!-- Sign-in gate: blocks the tracker until synced (only when sync is configured) -->
+  <div id="tk-gate" class="tk-gate no-print" hidden>
+    <div class="tk-gate__card" id="tk-gate-card"></div>
   </div>
 
   <footer class="site-footer no-print">

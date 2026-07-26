@@ -162,3 +162,41 @@
   body { padding-top: 0; }
 }
 .tk-print-head { display: none; }
+
+/* ---- Cloud sync: top status bar ---------------------------------------- */
+.tk-syncbar {
+  position: sticky; top: var(--nav-h); z-index: 90;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: 10px clamp(var(--space-4), 4vw, var(--space-7));
+  font-size: var(--text-sm); font-family: var(--font-body);
+  border-bottom: 1.5px solid var(--rule);
+  background: var(--cream); color: var(--ink);
+}
+.tk-syncbar__msg { display: inline-flex; align-items: center; gap: 6px; }
+.tk-syncbar--on  { background: color-mix(in srgb, var(--green) 16%, var(--paper)); border-bottom-color: color-mix(in srgb, var(--green) 40%, var(--rule)); }
+.tk-syncbar--off { background: color-mix(in srgb, var(--amber) 22%, var(--paper)); border-bottom-color: color-mix(in srgb, var(--amber) 55%, var(--rule)); }
+.tk-syncbar--off .tk-syncbar__msg { font-weight: 600; }
+@media (max-width: 520px) { .tk-syncbar { justify-content: center; text-align: center; } }
+
+/* ---- Cloud sync: required sign-in gate ---------------------------------- */
+.tk-gate {
+  position: fixed; inset: 0; z-index: 4000;
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-5);
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+  backdrop-filter: blur(4px);
+}
+.tk-gate[hidden] { display: none; }
+.tk-gate__card {
+  background: var(--paper); border: 1.5px solid var(--rule); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow); max-width: 460px; width: 100%;
+  padding: var(--space-7) var(--space-6); text-align: center;
+}
+.tk-gate__mark { font-size: 2.4rem; line-height: 1; margin-bottom: var(--space-3); }
+.tk-gate__card h2 { font-size: var(--text-lg); margin: 0 0 var(--space-3); }
+.tk-gate__card p { color: var(--ink-soft); font-size: var(--text-sm); margin: 0 auto var(--space-4); max-width: 40ch; }
+.tk-gate__actions { display: flex; flex-direction: column; gap: var(--space-2); align-items: center; margin-bottom: var(--space-3); }
+.tk-gate__actions .btn { width: 100%; max-width: 280px; }
+.tk-gate__fine { font-size: var(--text-xs); color: var(--ink-muted); margin-bottom: 0 !important; }
+.tk-gate__spin { margin-bottom: 0 !important; }

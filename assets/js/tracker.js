@@ -771,49 +771,122 @@
   /* ---- cloud sync (window.Sync, optional) --------------------------------- */
   var syncSubscribed = false;
   var seededLocalUp = false;
+  var syncError = null;      // set if Firebase couldn't be reached
+  var gateBypassed = false;  // user chose "use this device only" after an error
+
+  // Turn raw Firebase auth errors into calm, human sentences.
+  function friendlyAuthError(e) {
+    var m = (e && (e.code || e.message)) || '';
+    if (/popup-closed|cancelled-popup|popup_closed/.test(m)) return 'The Google window closed before finishing — tap “Sign in with Google” to try again.';
+    if (/popup-blocked/.test(m)) return 'Your browser blocked the Google pop-up — allow pop-ups for this site, then try again.';
+    if (/unauthorized-domain/.test(m)) return 'This site isn’t authorised in Firebase yet. Add the domain under Authentication → Settings → Authorized domains.';
+    if (/network-request-failed/.test(m)) return 'Couldn’t reach Google — check the internet connection and try again.';
+    if (/not on the access list/.test(m)) return (e && e.message) || m; // already friendly
+    return (e && e.message) || 'Sign-in didn’t finish — please try again.';
+  }
+
+  function doSignIn(btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Opening Google…'; }
+    return Sync.signIn()
+      .then(function () { syncError = null; status('Signed in — your work now syncs across devices.', 'ok'); })
+      .catch(function (e) { status(esc(friendlyAuthError(e)), 'warn'); renderSync(); });
+  }
 
   function renderSync() {
-    if (!el.syncArea) return;
-    if (!window.Sync || !Sync.isConfigured()) { el.syncArea.style.display = 'none'; return; }
-    el.syncArea.style.display = '';
-    var s = Sync.state();
-    var body = el.syncBody;
-    if (!s.ready) {
-      body.innerHTML = '<p class="u-xs u-muted" style="margin:0"><span class="tk-spinner"></span>Connecting…</p>';
+    if (!window.Sync || !Sync.isConfigured()) {
+      if (el.syncBar) el.syncBar.style.display = 'none';
+      if (el.gate) el.gate.hidden = true;
       return;
     }
-    if (!s.signedIn) {
-      body.innerHTML =
-        '<p class="u-xs u-muted" style="margin:0 0 var(--space-2)">Sign in to sync your trackers to every device — and let family follow your progress.</p>' +
-        '<button class="btn btn--primary btn--sm" id="tk-sync-in" style="width:100%">Sign in with Google</button>';
-      var b = $('tk-sync-in');
-      if (b) b.addEventListener('click', function () {
-        b.disabled = true; b.textContent = 'Opening Google…';
-        Sync.signIn().then(function () { status('Signed in — syncing now.', 'ok'); })
-          .catch(function (e) { status(esc(e.message || 'Sign-in cancelled.'), 'warn'); renderSync(); });
+    var s = Sync.state();
+    renderSyncBar(s);
+    renderGate(s);
+
+    // Once signed in: start the live subscription (once) and seed local trackers up.
+    if (s.signedIn) {
+      if (!syncSubscribed) { syncSubscribed = true; Sync.subscribe(mergeRemoteDoc, removeRemoteDoc); }
+      if (Sync.canWrite && Sync.canWrite() && !seededLocalUp) { seededLocalUp = true; seedLocalTrackersToCloud(); }
+    }
+  }
+
+  // Slim, always-visible status bar under the nav.
+  function renderSyncBar(s) {
+    var bar = el.syncBar;
+    if (!bar) return;
+    bar.style.display = '';
+    if (!s.ready && !syncError) {
+      bar.className = 'tk-syncbar';
+      bar.innerHTML = '<span class="tk-syncbar__msg"><span class="tk-spinner"></span> Connecting to sync…</span>';
+      return;
+    }
+    if (s.signedIn) {
+      var roleLabel = s.role === 'editor' ? 'Editor — edits sync live' : (s.role === 'viewer' ? 'Viewer — read only' : 'No access');
+      bar.className = 'tk-syncbar tk-syncbar--on';
+      bar.innerHTML =
+        '<span class="tk-syncbar__msg">✓ Synced as <strong>' + esc(s.email) + '</strong> · ' + roleLabel + '</span>' +
+        '<button class="btn btn--ghost btn--sm" id="tk-sync-out">Sign out</button>';
+      var out = $('tk-sync-out');
+      if (out) out.addEventListener('click', function () {
+        Sync.signOut().then(function () { syncSubscribed = false; seededLocalUp = false; status('Signed out. Sign back in to keep syncing.', 'ok'); });
       });
       return;
     }
-    // Signed in.
-    var roleLabel = s.role === 'editor' ? 'can edit & sync' : (s.role === 'viewer' ? 'view-only' : 'no access');
-    var badge = s.role === 'editor' ? 'badge--green' : (s.role === 'viewer' ? 'badge--neutral' : 'badge--red');
-    body.innerHTML =
-      '<p class="u-xs" style="margin:0 0 var(--space-1)"><span class="tk-saved-tick">✓</span> <strong>' + esc(s.email) + '</strong></p>' +
-      '<p class="u-xs u-muted" style="margin:0 0 var(--space-2)"><span class="badge ' + badge + '">' + roleLabel + '</span> · syncs live across devices</p>' +
-      (s.role === 'viewer' ? '<p class="u-xs u-muted" style="margin:0 0 var(--space-2)">You’re watching her trackers — changes appear here automatically. Editing here stays on this device only.</p>' : '') +
-      '<button class="btn btn--ghost btn--sm" id="tk-sync-out" style="width:100%">Sign out</button>';
-    var out = $('tk-sync-out');
-    if (out) out.addEventListener('click', function () { Sync.signOut().then(function () { status('Signed out. Trackers stay saved on this device.', 'ok'); }); });
+    // Not signed in.
+    bar.className = 'tk-syncbar tk-syncbar--off';
+    bar.innerHTML =
+      '<span class="tk-syncbar__msg">⚠ Not syncing — your work stays on this device only.</span>' +
+      '<button class="btn btn--primary btn--sm" id="tk-sync-in-bar">Sign in with Google</button>';
+    var b = $('tk-sync-in-bar');
+    if (b) b.addEventListener('click', function () { doSignIn(b); });
+  }
 
-    // Once signed in, start the live subscription (once) and seed local trackers up.
-    if (!syncSubscribed) {
-      syncSubscribed = true;
-      Sync.subscribe(mergeRemoteDoc, removeRemoteDoc);
+  // Full-screen blocker shown until the user signs in (only when sync is configured).
+  function renderGate(s) {
+    var gate = el.gate, card = el.gateCard;
+    if (!gate || !card) return;
+
+    // Signed in, or the user chose to work offline after an error → no gate.
+    if (s.signedIn || gateBypassed) { gate.hidden = true; return; }
+
+    // Still connecting and no error yet → show a calm connecting state (blocks editing).
+    if (!s.ready && !syncError) {
+      gate.hidden = false;
+      card.innerHTML =
+        '<div class="tk-gate__mark">☁</div>' +
+        '<h2>Connecting…</h2>' +
+        '<p>Getting your synced trackers ready. This only takes a moment.</p>' +
+        '<p class="tk-gate__spin"><span class="tk-spinner"></span></p>';
+      return;
     }
-    if (Sync.canWrite && Sync.canWrite() && !seededLocalUp) {
-      seededLocalUp = true;
-      seedLocalTrackersToCloud();
+
+    gate.hidden = false;
+    if (syncError) {
+      // Couldn't reach Firebase — offer sign-in retry AND a safety escape so she's never locked out.
+      card.innerHTML =
+        '<div class="tk-gate__mark">⚠</div>' +
+        '<h2>Can’t reach sync right now</h2>' +
+        '<p>' + esc(friendlyAuthError(syncError)) + '</p>' +
+        '<div class="tk-gate__actions">' +
+          '<button class="btn btn--primary" id="tk-gate-retry">Try signing in again</button>' +
+          '<button class="btn btn--ghost btn--sm" id="tk-gate-offline">Use this device only for now</button>' +
+        '</div>' +
+        '<p class="tk-gate__fine">“This device only” means today’s work saves here but won’t sync until you sign in.</p>';
+      var r = $('tk-gate-retry');
+      if (r) r.addEventListener('click', function () { syncError = null; renderSync(); Sync.init().then(function () { renderSync(); }).catch(function (e) { syncError = e; renderSync(); }); doSignIn(r); });
+      var off = $('tk-gate-offline');
+      if (off) off.addEventListener('click', function () { gateBypassed = true; renderSync(); });
+      return;
     }
+
+    // Ready, not signed in → the required sign-in screen.
+    card.innerHTML =
+      '<div class="tk-gate__mark">🔒</div>' +
+      '<h2>Sign in to start</h2>' +
+      '<p>Your tracker saves to a shared space so it’s safe on every device and your family can follow along. Sign in once — this device stays signed in after that.</p>' +
+      '<div class="tk-gate__actions"><button class="btn btn--primary" id="tk-gate-in">Sign in with Google</button></div>' +
+      '<p class="tk-gate__fine">Use the Google account that was given access. Not on the list yet? Ask whoever set this up to add your email.</p>';
+    var gi = $('tk-gate-in');
+    if (gi) gi.addEventListener('click', function () { doSignIn(gi); });
   }
 
   // A remote tracker arrived/changed → adopt into localStorage if newer, refresh UI.
@@ -863,7 +936,7 @@
       subjectName: $('tk-subject-name'), progress: $('tk-progress'),
       viewToggle: $('tk-view-toggle'), filters: $('tk-filters'), tierFilter: $('tk-tier-filter'),
       saveInfo: $('tk-save-info'), driveArea: $('tk-drive-area'),
-      syncArea: $('tk-sync-area'), syncBody: $('tk-sync-body'),
+      syncBar: $('tk-sync-bar'), gate: $('tk-gate'), gateCard: $('tk-gate-card'),
       status: $('tk-status'), preview: $('tk-preview'), toolbar: $('tk-toolbar'), tableWrap: $('tk-table-wrap'),
       modal: $('tk-modal-backdrop'), modalContent: $('tk-modal-content'),
       subjectSelect: $('tk-subject-select')
@@ -914,7 +987,14 @@
     if (window.Sync && Sync.isConfigured()) {
       Sync.onStatus(renderSync);
       renderSync();
-      Sync.init().catch(function (e) { status('Sync: ' + esc(e.message || 'could not connect.'), 'warn'); });
+      // If Firebase can't be reached in 10s, drop the "connecting" gate into an
+      // error state with a safety escape — never leave her staring at a spinner.
+      var gateTimer = setTimeout(function () {
+        if (!Sync.state().ready) { syncError = new Error('network-request-failed'); renderSync(); }
+      }, 10000);
+      Sync.init()
+        .then(function () { clearTimeout(gateTimer); renderSync(); })
+        .catch(function (e) { clearTimeout(gateTimer); syncError = e; renderSync(); });
     }
 
     // Modal backdrop click closes

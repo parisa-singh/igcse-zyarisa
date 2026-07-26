@@ -115,12 +115,19 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
   - `firestore.rules` — editors write, viewers read, everyone else denied; requires verified email.
     MUST be pasted into Firebase console → Firestore → Rules → Publish. Allowlist here is the REAL lock;
     keep it in sync with firebase-config.js.
-- tracker wiring: `tracker/index.html` loads config+sync before tracker.js and has `#tk-sync-area`
-  sidebar panel. `tracker.js` — save() mirrors to cloud + logs activity (editors only); deleteTracker()
-  deletes remote; renderSync() draws sign-in/status UI; mergeRemoteDoc/removeRemoteDoc apply live
-  snapshot changes into localStorage (newer-wins by savedAt) and live-refresh the open tracker if the
-  edit came from someone else; seedLocalTrackersToCloud() pushes existing local trackers up on first
-  sign-in. localStorage stays the offline cache.
+- tracker wiring: `tracker/index.html` loads config+sync before tracker.js. Sync UI is now:
+  (a) `#tk-sync-bar` — sticky status bar under the nav (green "Synced as … · Editor/Viewer" + Sign out,
+  or amber "Not syncing" + Sign in); (b) `#tk-gate` — a **required, blocking full-screen sign-in gate**
+  (user asked sign-in be mandatory so nobody edits unsynced and loses data). Gate shows Connecting →
+  Sign-in-required → (on Firebase unreachable) error + "Use this device only" escape (10s timeout guard
+  in init so a stalled connection never locks her out; `gateBypassed` flag). browserLocalPersistence
+  keeps her signed in per-device, so the gate only appears first visit / after explicit sign-out.
+  `tracker.js` — save() mirrors to cloud + logs activity (editors only); deleteTracker() deletes remote;
+  renderSync()/renderSyncBar()/renderGate() draw the UI; friendlyAuthError() maps popup-closed etc. to
+  calm messages; mergeRemoteDoc/removeRemoteDoc apply live snapshot changes into localStorage
+  (newer-wins by savedAt) and live-refresh the open tracker if the edit came from someone else;
+  seedLocalTrackersToCloud() pushes existing local trackers up on first sign-in. localStorage stays the
+  offline cache. Styles: tracker.css `.tk-syncbar*` + `.tk-gate*` (appended at end).
 - **BLOCKING / PENDING before it works live:**
   1. User must give their Gmail → put in editors[] in BOTH firebase-config.js AND firestore.rules
      (currently placeholder `REPLACE_WITH_YOUR_GMAIL@gmail.com`).
