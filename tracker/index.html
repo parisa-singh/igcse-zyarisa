@@ -29,22 +29,26 @@
   <!-- INPUT PATHS -->
   <section class="section section--tight">
     <div class="container">
+      <div class="tk-paths-intro">
+        <h2>Start your tracker — pick just <em>one</em> way</h2>
+        <p>These are three <strong>separate ways</strong> to load your syllabus. Do <strong>any one</strong> of them — you don’t need to do the others.</p>
+      </div>
       <div class="tk-paths">
-        <div class="tk-path">
-          <h4><span class="tk-path__num">1</span> Upload a PDF</h4>
-          <p>Drop your syllabus PDF here — it's parsed entirely in your browser, nothing is uploaded anywhere.</p>
+        <div class="tk-path tk-path--primary">
+          <h4><span class="tk-path__num">★</span> Upload your syllabus PDF <span class="tk-path__tag">easiest</span></h4>
+          <p>Drop the syllabus PDF here and it builds your tracker straight from the file. <strong>This is all you need</strong> — nothing to paste. It’s read right in your browser; nothing is uploaded anywhere.</p>
           <div class="tk-drop" id="tk-drop">Click or drop a syllabus <strong>.pdf</strong> here</div>
           <input type="file" id="tk-pdf-input" accept="application/pdf" hidden>
         </div>
         <div class="tk-path">
-          <h4><span class="tk-path__num">2</span> Paste text</h4>
-          <p>Open the syllabus PDF, select the “subject content” pages, copy, and paste here. Just as good as upload — best for French &amp; Psychology.</p>
+          <h4><span class="tk-path__num">or</span> Paste the text instead</h4>
+          <p>Only if the PDF won’t upload or read cleanly: open the syllabus, select the “subject content” pages, copy, and paste here. Handy for French &amp; Psychology.</p>
           <textarea class="tk-textarea" id="tk-paste" placeholder="Paste syllabus text…"></textarea>
           <button class="btn btn--primary btn--sm" id="tk-parse-paste">Parse pasted text →</button>
         </div>
         <div class="tk-path">
-          <h4><span class="tk-path__num">3</span> Pick a subject</h4>
-          <p>Start from a high-level outline for one of your nine subjects, then edit rows to match your syllabus.</p>
+          <h4><span class="tk-path__num">or</span> Start from a subject outline</h4>
+          <p>No syllabus file handy? Start from a built-in outline for one of your nine subjects, then edit the rows to match.</p>
           <select class="tk-select" id="tk-subject-select"><option value="">Choose a subject…</option></select>
           <button class="btn btn--primary btn--sm" id="tk-load-subject">Load subject outline →</button>
         </div>

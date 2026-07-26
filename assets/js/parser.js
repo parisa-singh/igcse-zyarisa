@@ -85,14 +85,17 @@
   };
 
   function detectPattern(lines) {
+    // Count only STRUCTURE markers. Bullets are objective markers used by BOTH
+    // patterns, so they must NOT tip the choice toward skill parsing — that was
+    // sending modern "1.1 topic + bullet objectives" syllabuses to the wrong parser.
     var numeric = 0, lettered = 0;
     lines.forEach(function (l) {
       if (RE.objNum.test(l) || RE.topicNum.test(l) || RE.unitNum.test(l)) numeric++;
-      if (RE.topicLet.test(l) || RE.bullet.test(l)) lettered++;
+      if (RE.topicLet.test(l)) lettered++;                 // real skill codes only (R1, W2…)
     });
-    if (numeric >= lettered && numeric > 0) return numeric > lettered * 2 ? 'A' : 'A-mixed';
-    if (lettered > 0) return lettered > numeric * 2 ? 'B' : 'B-mixed';
-    return 'B'; // fall back to loose/skill parsing
+    if (numeric > 0 && numeric >= lettered) return 'A';     // any numeric hierarchy → numeric parser
+    if (lettered > 0) return 'B';                           // skill/lettered
+    return 'B';                                             // headings + bullets / loose
   }
 
   /* ---- multi-line continuation join --------------------------------------- */
@@ -101,10 +104,14 @@
            RE.topicLet.test(line) || RE.bullet.test(line);
   }
 
+  // A line that is ONLY a tier marker ("Core", "Supplement", "Extended").
+  var TIER_ONLY = /^(core|supplement|extended)\b\s*:?\s*$/i;
+  function tierFromMarker(s) { return /supplement|extended/i.test(s) ? 'extended' : 'core'; }
+
   /* ---- Stage 2/3: Pattern A (numeric hierarchy) --------------------------- */
   function parseNumeric(lines) {
     var units = [];
-    var curUnit = null, curTopic = null, curObj = null;
+    var curUnit = null, curTopic = null, curObj = null, curTier = null;
     var flagged = [];
 
     function ensureUnit(id, title) { curUnit = { id: id, title: clean(title), topics: [] }; units.push(curUnit); curTopic = null; curObj = null; }
@@ -112,25 +119,32 @@
       if (!curUnit) ensureUnit(id.split('.')[0], 'Unit ' + id.split('.')[0]);
       curTopic = { id: id, title: clean(title), objectives: [] }; curUnit.topics.push(curTopic); curObj = null;
     }
+    function addObjective(text) {
+      if (!curTopic) ensureTopic((curUnit ? curUnit.id : '1') + '.1', curUnit ? curUnit.title : 'Objectives');
+      var d = classifyDemand(text);
+      curObj = { id: curTopic.id + '.' + (curTopic.objectives.length + 1), text: clean(text), demandVerb: d.verb, demandLevel: d.level, tier: curTier || detectTier(text) };
+      curTopic.objectives.push(curObj);
+    }
 
     lines.forEach(function (line) {
       var m;
+      if (TIER_ONLY.test(line)) { curTier = tierFromMarker(line); return; } // "Core"/"Supplement" header
       if ((m = line.match(RE.objNum))) {
-        if (!curTopic) {
-          var tid = m[1].split('.').slice(0, 2).join('.');
-          ensureTopic(tid, 'Topic ' + tid);
-        }
+        if (!curTopic) { var tid = m[1].split('.').slice(0, 2).join('.'); ensureTopic(tid, 'Topic ' + tid); }
         var d = classifyDemand(m[2]);
-        curObj = { id: m[1], text: clean(m[2]), demandVerb: d.verb, demandLevel: d.level, tier: detectTier(m[2]) };
+        curObj = { id: m[1], text: clean(m[2]), demandVerb: d.verb, demandLevel: d.level, tier: curTier || detectTier(m[2]) };
         curTopic.objectives.push(curObj);
       } else if ((m = line.match(RE.topicNum))) {
-        ensureTopic(m[1], m[2]);
+        ensureTopic(m[1], m[2]); curTier = null;
       } else if ((m = line.match(RE.unitNum))) {
-        ensureUnit(m[1], m[2]);
+        ensureUnit(m[1], m[2]); curTier = null;
+      } else if ((m = line.match(RE.bullet))) {
+        addObjective(m[1]);                                   // • bullet objective
       } else {
-        // continuation of the previous objective/topic
+        // No marker: objective continuation, topic-title wrap, or a loose objective.
         if (curObj) { curObj.text = clean(curObj.text + ' ' + line); refreshDemand(curObj); }
-        else if (curTopic) { curTopic.title = clean(curTopic.title + ' ' + line); }
+        else if (curTopic && curTopic.objectives.length === 0) { curTopic.title = clean(curTopic.title + ' ' + line); }
+        else if (curTopic) { addObjective(line); }
         else { flagged.push(line); }
       }
     });
@@ -151,6 +165,7 @@
 
     lines.forEach(function (line) {
       var m;
+      if (TIER_ONLY.test(line)) { return; } // drop lone "Core"/"Supplement" headers
       if ((m = line.match(RE.topicLet))) {
         ensureTopic(m[1], m[2]);
       } else if ((m = line.match(RE.bullet))) {
@@ -171,6 +186,33 @@
       }
     });
     return { units: units, flagged: flagged };
+  }
+
+  /* ---- Last-resort loose parser: never come back empty if there's content -- */
+  // Turns almost any list of lines into headings (topics) + objectives so the
+  // student always gets an editable checklist, flagged as 'review'.
+  function parseLoose(lines) {
+    var unit = { id: '1', title: 'Syllabus content', topics: [] };
+    var curTopic = null, curObj = null;
+    function newTopic(title) { curTopic = { id: 't' + (unit.topics.length + 1), title: clean(title), objectives: [] }; unit.topics.push(curTopic); curObj = null; }
+    function addObj(text) {
+      if (!curTopic) newTopic('General');
+      var d = classifyDemand(text);
+      curObj = { id: curTopic.id + '.' + (curTopic.objectives.length + 1), text: clean(text), demandVerb: d.verb, demandLevel: d.level, tier: detectTier(text) };
+      curTopic.objectives.push(curObj);
+    }
+    lines.forEach(function (line) {
+      if (TIER_ONLY.test(line)) return;
+      var m;
+      if ((m = line.match(RE.unitNum)) || (m = line.match(RE.topicNum))) { newTopic(m[2]); return; }
+      var bm = line.match(RE.bullet);
+      if (bm) { addObj(bm[1]); return; }
+      if (isHeading(line)) { newTopic(line); return; }
+      // A wrapped continuation of the previous objective, else a loose objective.
+      if (curObj && /^[a-z(]/.test(line)) { curObj.text = clean(curObj.text + ' ' + line); refreshDemand(curObj); }
+      else addObj(line);
+    });
+    return { units: unit.topics.length ? [unit] : [], flagged: [] };
   }
 
   /* ---- small helpers ------------------------------------------------------ */
@@ -197,7 +239,9 @@
 
   /* ---- Stage 4/5: orchestration + confidence + stats --------------------- */
   function parseSyllabus(text) {
-    var rawLines = String(text || '').split(/\r?\n/).map(function (l) { return l.replace(/\t/g, ' ').trimEnd(); });
+    // Full-trim each line (leading spaces too) so copied/indented text still
+    // matches the "number at start of line" patterns.
+    var rawLines = String(text || '').split(/\r?\n/).map(function (l) { return l.replace(/\t/g, ' ').replace(/\s+/g, ' ').trim(); });
     var lines = stripNoise(rawLines);
     var pattern = detectPattern(lines);
 
@@ -209,12 +253,20 @@
     result.units = result.units.filter(function (u) { return u.topics.length > 0; });
 
     var stats = countStats(result.units);
+    var usedLoose = false;
+    // Nothing structured detected → last-resort loose parse so we rarely fail.
+    if (stats.topics === 0) {
+      var loose = parseLoose(lines);
+      loose.units = loose.units.filter(function (u) { return u.topics.length > 0; });
+      if (countStats(loose.units).topics > 0) { result = loose; stats = countStats(result.units); usedLoose = true; }
+    }
+
     var confidence;
-    if (pattern === 'A') confidence = 'high';
-    else if (pattern === 'B' && stats.objectives > 0) confidence = 'medium';
+    if (usedLoose) confidence = 'review';
+    else if (pattern === 'A' && stats.objectives > 0) confidence = 'high';
+    else if (stats.objectives > 0) confidence = 'medium';
+    else if (stats.topics > 0) confidence = 'medium';       // topic-level only (e.g. skill codes)
     else confidence = 'review';
-    // Mixed structures always warrant review
-    if (pattern.indexOf('mixed') !== -1) confidence = 'review';
     if (stats.topics === 0) confidence = 'review';
 
     return {
@@ -223,7 +275,9 @@
       parseConfidence: confidence,           // 'high' | 'medium' | 'review'
       stats: stats,                          // { units, topics, objectives }
       flagged: result.flagged || [],         // lines the parser was unsure about
-      warning: pattern.indexOf('mixed') !== -1 ? 'Mixed structure — review suggested' : null
+      warning: usedLoose
+        ? 'Structure wasn’t obvious, so this is a best-effort read — check the topics below and edit anything that looks off.'
+        : null
     };
   }
 

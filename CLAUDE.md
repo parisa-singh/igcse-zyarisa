@@ -174,6 +174,14 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
 - parser.js exposes window.Parser: parseSyllabus(text)→{units,pattern,parseConfidence,stats,flagged,warning};
   extractPdfText(file)→Promise<text> (needs global pdfjsLib); classifyDemand(text); DEMAND_VERBS.
   Pattern A = numeric (\d+ / \d+.\d+ / \d+.\d+.\d+); Pattern B = skill/lettered (Reading / R1 / • bullet).
+  ROBUSTNESS (2026-07-26): lines are now FULL-trimmed (leading spaces too) so indented pastes match;
+  detectPattern counts ONLY structure markers (numeric vs R1-style) — bullets no longer tip routing, so
+  modern "1.1 topic + Core/Supplement bullet objectives" syllabuses correctly use the numeric parser
+  (parseNumeric now reads bullets as objectives + tracks Core/Supplement→tier). New parseLoose()
+  last-resort turns headings+lines into topics/objectives so parse rarely returns empty (conf='review',
+  warning set). Verified via scratchpad ptest.js against 5 formats. Input UI reworked: three paths are
+  now clearly ALTERNATIVES ("pick just one"), PDF promoted as primary (.tk-path--primary), badges say
+  ★/or not 1/2/3.
 - drive.js exposes window.Drive (GIS token flow + Drive REST v3, scope drive.file, folder "IGCSE Tracker").
   Client ID stored at `igcse-drive-client-id`. Optional; nothing runs until user sets it up.
 - "Select Subject" path: subjects.json has NO topic lists (only papers), so tracker.js embeds SUBJECT_OUTLINES

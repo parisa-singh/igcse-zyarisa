@@ -54,11 +54,18 @@
 .tk-btn-col { display: flex; flex-direction: column; gap: var(--space-2); }
 
 /* ---- Input paths (three equal cards) ----------------------------------- */
-.tk-paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+.tk-paths-intro { margin-bottom: var(--space-4); }
+.tk-paths-intro h2 { margin: 0 0 var(--space-2); font-size: var(--text-lg); }
+.tk-paths-intro h2 em { color: var(--accent); font-style: italic; }
+.tk-paths-intro p { margin: 0; color: var(--ink-soft); font-size: var(--text-sm); max-width: 70ch; }
+.tk-paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); align-items: start; }
 @media (max-width: 760px) { .tk-paths { grid-template-columns: 1fr; } }
 .tk-path { background: var(--cream); border: 1.5px solid var(--rule); border-radius: var(--radius); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
-.tk-path h4 { margin: 0; display: flex; align-items: center; gap: 8px; }
-.tk-path__num { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--accent); color: var(--paper); width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+/* The primary (PDF) path is visually promoted so it reads as "do this one". */
+.tk-path--primary { border-color: var(--accent); border-width: 2px; background: color-mix(in srgb, var(--accent) 6%, var(--paper)); box-shadow: 0 2px 10px color-mix(in srgb, var(--accent) 14%, transparent); }
+.tk-path h4 { margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tk-path__num { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--accent); color: var(--paper); min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--radius-pill); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.tk-path__tag { font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; background: var(--green); color: var(--paper); padding: 2px 7px; border-radius: var(--radius-pill); }
 .tk-path p { font-size: var(--text-sm); color: var(--ink-soft); margin: 0; }
 
 .tk-drop { border: 1.5px dashed var(--rule); border-radius: var(--radius); padding: var(--space-4); text-align: center; font-size: var(--text-sm); color: var(--ink-muted); cursor: pointer; background: var(--paper); }
