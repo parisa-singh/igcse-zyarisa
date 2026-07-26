@@ -99,6 +99,41 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
 - External links: `target="_blank" rel="noopener"`. Uncertain YouTube URLs use search-query links
   (honest per spec's "search for X" pattern) rather than fabricated channel/video IDs.
 
+## Cross-device sync — Firebase (in progress)
+- GOAL: sister (India) creates trackers; user (US) + eventually parents see them live on any device.
+  Chosen: **Firebase Firestore (Native mode, Standard edition, region asia-south1/Mumbai)**, ONE shared
+  space, **Google Sign-In**, **two tiers** (editors edit+sync, viewers read-only).
+- Firebase project **igcse-zyarisa** (project #62637365031), owned by the US user's Google account.
+  Firestore created in **production mode** (locked until rules published).
+- Files added:
+  - `assets/js/firebase-config.js` — web config (public, not secret) + `window.SYNC_ALLOWLIST`
+    {editors:[], viewers:[]}. UI-only mirror of the rules.
+  - `assets/js/firebase-sync.js` — `window.Sync`. Loads Firebase v12 modular SDK via dynamic
+    `import()` from gstatic (no build step). Google popup sign-in, role from allowlist, collections
+    `trackers/{slug}` + append-only `activity/{auto}`, live `onSnapshot` subscribe, best-effort writes.
+    DORMANT unless config apiKey is real (isConfigured()).
+  - `firestore.rules` — editors write, viewers read, everyone else denied; requires verified email.
+    MUST be pasted into Firebase console → Firestore → Rules → Publish. Allowlist here is the REAL lock;
+    keep it in sync with firebase-config.js.
+- tracker wiring: `tracker/index.html` loads config+sync before tracker.js and has `#tk-sync-area`
+  sidebar panel. `tracker.js` — save() mirrors to cloud + logs activity (editors only); deleteTracker()
+  deletes remote; renderSync() draws sign-in/status UI; mergeRemoteDoc/removeRemoteDoc apply live
+  snapshot changes into localStorage (newer-wins by savedAt) and live-refresh the open tracker if the
+  edit came from someone else; seedLocalTrackersToCloud() pushes existing local trackers up on first
+  sign-in. localStorage stays the offline cache.
+- **BLOCKING / PENDING before it works live:**
+  1. User must give their Gmail → put in editors[] in BOTH firebase-config.js AND firestore.rules
+     (currently placeholder `REPLACE_WITH_YOUR_GMAIL@gmail.com`).
+  2. Publish firestore.rules in the Firebase console.
+  3. **Authentication → Sign-in method → Google → Enable.**
+  4. **Authentication → Settings → Authorized domains → ADD `parisa-singh.github.io`** (GitHub Pages
+     domain is NOT there by default — signInWithPopup fails with auth/unauthorized-domain without it).
+     localhost is already allowed for local testing.
+  5. Sister's new Gmail unknown — add to both lists later (she can sign in once to surface her email in
+     Authentication → Users). Parents → viewers[] later.
+- NOT yet browser-tested (needs Live Server + real Google accounts). Home-page activity/dashboard view
+  is a possible follow-up (tracker library already doubles as the reports view once synced).
+
 ## Design direction — DECIDED: playful / gamified
 - User rejected the plain dashboard; chose **playful / gamified** (bright, rounded, warm, motivating —
   Duolingo-ish but professional). HOME (index.html, data-no-toc) rebuilt in this style:

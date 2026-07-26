@@ -72,6 +72,12 @@
     } catch (e) {
       if (el.saveInfo) el.saveInfo.textContent = 'Could not save (storage full?).';
     }
+    // Best-effort mirror to the shared cloud space (editors only; no-op otherwise).
+    if (window.Sync && Sync.canWrite && Sync.canWrite()) {
+      Sync.pushTracker(state.slug, payload);
+      var c = counts();
+      Sync.logActivity({ slug: state.slug, subjectName: (state.meta && state.meta.name) || state.slug, greenPct: c.total ? Math.round(c.green / c.total * 100) : 0, total: c.total });
+    }
   }
 
   function loadStored(slug) {
@@ -588,6 +594,7 @@
   function deleteTracker(slug) {
     localStorage.removeItem(storageKey(slug));
     if (localStorage.getItem('igcse-tracker-last') === slug) localStorage.removeItem('igcse-tracker-last');
+    if (window.Sync && Sync.canWrite && Sync.canWrite()) Sync.deleteTracker(slug);
     if (state.slug === slug) {
       state.slug = null; state.structure = null; state.meta = null;
       renderEmpty();
@@ -761,12 +768,102 @@
   }
   function closeModal() { el.modal.classList.remove('is-open'); el.modalContent.innerHTML = ''; }
 
+  /* ---- cloud sync (window.Sync, optional) --------------------------------- */
+  var syncSubscribed = false;
+  var seededLocalUp = false;
+
+  function renderSync() {
+    if (!el.syncArea) return;
+    if (!window.Sync || !Sync.isConfigured()) { el.syncArea.style.display = 'none'; return; }
+    el.syncArea.style.display = '';
+    var s = Sync.state();
+    var body = el.syncBody;
+    if (!s.ready) {
+      body.innerHTML = '<p class="u-xs u-muted" style="margin:0"><span class="tk-spinner"></span>Connecting…</p>';
+      return;
+    }
+    if (!s.signedIn) {
+      body.innerHTML =
+        '<p class="u-xs u-muted" style="margin:0 0 var(--space-2)">Sign in to sync your trackers to every device — and let family follow your progress.</p>' +
+        '<button class="btn btn--primary btn--sm" id="tk-sync-in" style="width:100%">Sign in with Google</button>';
+      var b = $('tk-sync-in');
+      if (b) b.addEventListener('click', function () {
+        b.disabled = true; b.textContent = 'Opening Google…';
+        Sync.signIn().then(function () { status('Signed in — syncing now.', 'ok'); })
+          .catch(function (e) { status(esc(e.message || 'Sign-in cancelled.'), 'warn'); renderSync(); });
+      });
+      return;
+    }
+    // Signed in.
+    var roleLabel = s.role === 'editor' ? 'can edit & sync' : (s.role === 'viewer' ? 'view-only' : 'no access');
+    var badge = s.role === 'editor' ? 'badge--green' : (s.role === 'viewer' ? 'badge--neutral' : 'badge--red');
+    body.innerHTML =
+      '<p class="u-xs" style="margin:0 0 var(--space-1)"><span class="tk-saved-tick">✓</span> <strong>' + esc(s.email) + '</strong></p>' +
+      '<p class="u-xs u-muted" style="margin:0 0 var(--space-2)"><span class="badge ' + badge + '">' + roleLabel + '</span> · syncs live across devices</p>' +
+      (s.role === 'viewer' ? '<p class="u-xs u-muted" style="margin:0 0 var(--space-2)">You’re watching her trackers — changes appear here automatically. Editing here stays on this device only.</p>' : '') +
+      '<button class="btn btn--ghost btn--sm" id="tk-sync-out" style="width:100%">Sign out</button>';
+    var out = $('tk-sync-out');
+    if (out) out.addEventListener('click', function () { Sync.signOut().then(function () { status('Signed out. Trackers stay saved on this device.', 'ok'); }); });
+
+    // Once signed in, start the live subscription (once) and seed local trackers up.
+    if (!syncSubscribed) {
+      syncSubscribed = true;
+      Sync.subscribe(mergeRemoteDoc, removeRemoteDoc);
+    }
+    if (Sync.canWrite && Sync.canWrite() && !seededLocalUp) {
+      seededLocalUp = true;
+      seedLocalTrackersToCloud();
+    }
+  }
+
+  // A remote tracker arrived/changed → adopt into localStorage if newer, refresh UI.
+  function mergeRemoteDoc(slug, remote) {
+    if (!remote || !remote.structure) return;
+    var local = loadStored(slug);
+    var rt = remote.savedAt || '', lt = (local && local.savedAt) || '';
+    if (local && rt <= lt) return; // ours is same/newer — keep it
+    var toStore = {
+      version: remote.version || 1, meta: remote.meta, slug: slug,
+      structure: remote.structure, ratings: remote.ratings || { topic: {}, objective: {} },
+      savedAt: remote.savedAt, savedBy: remote.savedBy
+    };
+    try { localStorage.setItem(storageKey(slug), JSON.stringify(toStore)); } catch (e) { return; }
+    // If it's the tracker currently on screen and the edit came from someone else, live-refresh.
+    var mine = Sync.myEmail && Sync.myEmail();
+    if (state.slug === slug && remote.savedBy && remote.savedBy !== mine) {
+      openStored(slug);
+      status('Updated from ' + esc(remote.savedBy) + '.', 'ok');
+    }
+    if (el.modal && el.modal.classList.contains('is-open')) openLibrary();
+  }
+
+  // A remote tracker was deleted by an editor → remove our cloud-synced copy too.
+  function removeRemoteDoc(slug) {
+    var local = loadStored(slug);
+    if (!local || !local.savedBy) return; // only drop copies that came from the cloud
+    localStorage.removeItem(storageKey(slug));
+    if (state.slug === slug) { state.slug = null; state.structure = null; state.meta = null; renderEmpty(); }
+    if (el.modal && el.modal.classList.contains('is-open')) openLibrary();
+  }
+
+  // Push any trackers this browser already has up to the shared space (first sign-in).
+  function seedLocalTrackersToCloud() {
+    listSavedTrackers().forEach(function (item) {
+      var d = item.data;
+      Sync.pushTracker(item.slug, {
+        version: d.version || 1, meta: d.meta, structure: d.structure,
+        ratings: d.ratings, savedAt: d.savedAt || new Date().toISOString()
+      });
+    });
+  }
+
   /* ---- init --------------------------------------------------------------- */
   function init() {
     el = {
       subjectName: $('tk-subject-name'), progress: $('tk-progress'),
       viewToggle: $('tk-view-toggle'), filters: $('tk-filters'), tierFilter: $('tk-tier-filter'),
       saveInfo: $('tk-save-info'), driveArea: $('tk-drive-area'),
+      syncArea: $('tk-sync-area'), syncBody: $('tk-sync-body'),
       status: $('tk-status'), preview: $('tk-preview'), toolbar: $('tk-toolbar'), tableWrap: $('tk-table-wrap'),
       modal: $('tk-modal-backdrop'), modalContent: $('tk-modal-content'),
       subjectSelect: $('tk-subject-select')
@@ -812,6 +909,13 @@
 
     // Drive
     if (el.driveArea && window.Drive) { driveState(); window.Drive.onStatus(driveState); }
+
+    // Cloud sync (optional — dormant unless firebase-config.js is filled in)
+    if (window.Sync && Sync.isConfigured()) {
+      Sync.onStatus(renderSync);
+      renderSync();
+      Sync.init().catch(function (e) { status('Sync: ' + esc(e.message || 'could not connect.'), 'warn'); });
+    }
 
     // Modal backdrop click closes
     if (el.modal) el.modal.addEventListener('click', function (e) { if (e.target === el.modal) closeModal(); });
