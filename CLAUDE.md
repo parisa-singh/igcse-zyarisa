@@ -105,16 +105,20 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
   space, **Google Sign-In**, **two tiers** (editors edit+sync, viewers read-only).
 - Firebase project **igcse-zyarisa** (project #62637365031), owned by the US user's Google account.
   Firestore created in **production mode** (locked until rules published).
+- PRIVACY DECISION (user chose): NO family emails in the repo or served JS (both are public). The
+  allowlist lives ONLY in the LIVE Firestore console rules (private). The client keeps no email list —
+  after Google sign-in it detects role by PERMISSION PROBE: probe write ok → editor; trackers read ok →
+  viewer; neither → denied (auto signed out). Real emails were given in chat and belong only in the
+  console rules — do NOT commit them.
 - Files added:
-  - `assets/js/firebase-config.js` — web config (public, not secret) + `window.SYNC_ALLOWLIST`
-    {editors:[], viewers:[]}. UI-only mirror of the rules.
-  - `assets/js/firebase-sync.js` — `window.Sync`. Loads Firebase v12 modular SDK via dynamic
-    `import()` from gstatic (no build step). Google popup sign-in, role from allowlist, collections
-    `trackers/{slug}` + append-only `activity/{auto}`, live `onSnapshot` subscribe, best-effort writes.
-    DORMANT unless config apiKey is real (isConfigured()).
-  - `firestore.rules` — editors write, viewers read, everyone else denied; requires verified email.
-    MUST be pasted into Firebase console → Firestore → Rules → Publish. Allowlist here is the REAL lock;
-    keep it in sync with firebase-config.js.
+  - `assets/js/firebase-config.js` — web config ONLY (public, not secret). No allowlist.
+  - `assets/js/firebase-sync.js` — `window.Sync`. Loads Firebase v12 modular SDK via dynamic `import()`
+    from gstatic (no build step). Google popup sign-in; ensureRole()/detectRole() probe-based role
+    (single-flight); collections `trackers/{slug}` + append-only `activity/{auto}` + write-only
+    `probe/{uid}`; live `onSnapshot` subscribe; best-effort writes. state() exposes
+    ready/signedIn/checking/denied/roleError/email/role. DORMANT unless config apiKey is real.
+  - `firestore.rules` — TEMPLATE ONLY (placeholders, no real emails). Real editors/viewers go in the
+    CONSOLE copy → Firestore → Rules → Publish. Includes `probe/{uid}` match (editor+own-uid write).
 - tracker wiring: `tracker/index.html` loads config+sync before tracker.js. Sync UI is now:
   (a) `#tk-sync-bar` — sticky status bar under the nav (green "Synced as … · Editor/Viewer" + Sign out,
   or amber "Not syncing" + Sign in); (b) `#tk-gate` — a **required, blocking full-screen sign-in gate**
@@ -128,18 +132,21 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
   (newer-wins by savedAt) and live-refresh the open tracker if the edit came from someone else;
   seedLocalTrackersToCloud() pushes existing local trackers up on first sign-in. localStorage stays the
   offline cache. Styles: tracker.css `.tk-syncbar*` + `.tk-gate*` (appended at end).
-- **BLOCKING / PENDING before it works live:**
-  1. User must give their Gmail → put in editors[] in BOTH firebase-config.js AND firestore.rules
-     (currently placeholder `REPLACE_WITH_YOUR_GMAIL@gmail.com`).
-  2. Publish firestore.rules in the Firebase console.
-  3. **Authentication → Sign-in method → Google → Enable.**
-  4. **Authentication → Settings → Authorized domains → ADD `parisa-singh.github.io`** (GitHub Pages
+- ALLOWLIST (real emails were provided in chat; put them ONLY in the console rules, NEVER in any repo
+  file incl. this one): editors = owner + sister (2); viewers = mom + dad (2). Owner's own email is
+  parisasingh@gmail.com (already in git history pre-refactor). Do not write the other three anywhere
+  tracked by git.
+- **BLOCKING / PENDING before it works live (user said she'll do console steps later):**
+  1. Firebase console → Firestore → **Rules** → paste the LIVE rules (template in firestore.rules, with
+     the 4 real emails filled into editors()/viewers()) → **Publish**. (Earlier a rules copy with just
+     parisasingh@gmail.com as editor may have been published — re-publish with all four.)
+  2. **Authentication → Sign-in method → Google → Enable** (done — public name "IGCSE Playbook" + support email).
+  3. **Authentication → Settings → Authorized domains → ADD `parisa-singh.github.io`** (GitHub Pages
      domain is NOT there by default — signInWithPopup fails with auth/unauthorized-domain without it).
-     localhost is already allowed for local testing.
-  5. Sister's new Gmail unknown — add to both lists later (she can sign in once to surface her email in
-     Authentication → Users). Parents → viewers[] later.
-- NOT yet browser-tested (needs Live Server + real Google accounts). Home-page activity/dashboard view
-  is a possible follow-up (tracker library already doubles as the reports view once synced).
+- HISTORY NOTE: earlier commits (aaf2424 etc.) DID commit parisasingh@gmail.com in config/rules before
+  the privacy refactor; it's the owner's own email, left as-is. Sister/parent emails were NEVER committed.
+- NOT yet browser-tested (needs the console steps + real Google accounts). Home-page activity/dashboard
+  view is a possible follow-up (tracker library already doubles as the reports view once synced).
 
 ## Design direction — DECIDED: playful / gamified
 - User rejected the plain dashboard; chose **playful / gamified** (bright, rounded, warm, motivating —

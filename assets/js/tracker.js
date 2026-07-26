@@ -814,13 +814,14 @@
     var bar = el.syncBar;
     if (!bar) return;
     bar.style.display = '';
-    if (!s.ready && !syncError) {
+    if ((!s.ready && !syncError) || (s.signedIn && s.checking)) {
       bar.className = 'tk-syncbar';
-      bar.innerHTML = '<span class="tk-syncbar__msg"><span class="tk-spinner"></span> Connecting to sync…</span>';
+      bar.innerHTML = '<span class="tk-syncbar__msg"><span class="tk-spinner"></span> ' +
+        (s.signedIn ? 'Checking your access…' : 'Connecting to sync…') + '</span>';
       return;
     }
-    if (s.signedIn) {
-      var roleLabel = s.role === 'editor' ? 'Editor — edits sync live' : (s.role === 'viewer' ? 'Viewer — read only' : 'No access');
+    if (s.signedIn && s.role) {
+      var roleLabel = s.role === 'editor' ? 'Editor — edits sync live' : 'Viewer — read only';
       bar.className = 'tk-syncbar tk-syncbar--on';
       bar.innerHTML =
         '<span class="tk-syncbar__msg">✓ Synced as <strong>' + esc(s.email) + '</strong> · ' + roleLabel + '</span>' +
@@ -831,7 +832,7 @@
       });
       return;
     }
-    // Not signed in.
+    // Not signed in (or signed in but access not resolved).
     bar.className = 'tk-syncbar tk-syncbar--off';
     bar.innerHTML =
       '<span class="tk-syncbar__msg">⚠ Not syncing — your work stays on this device only.</span>' +
@@ -840,17 +841,46 @@
     if (b) b.addEventListener('click', function () { doSignIn(b); });
   }
 
-  // Full-screen blocker shown until the user signs in (only when sync is configured).
+  // Full-screen blocker shown until the user is signed in AND their access is confirmed.
   function renderGate(s) {
     var gate = el.gate, card = el.gateCard;
     if (!gate || !card) return;
 
-    // Signed in, or the user chose to work offline after an error → no gate.
-    if (s.signedIn || gateBypassed) { gate.hidden = true; return; }
+    // Confirmed access, or user chose to work offline after an error → no gate.
+    if ((s.signedIn && s.role) || gateBypassed) { gate.hidden = true; return; }
 
-    // Still connecting and no error yet → show a calm connecting state (blocks editing).
+    gate.hidden = false;
+
+    // Signed in but Firestore rejected the access check (usually a network blip).
+    if (s.signedIn && s.roleError) {
+      card.innerHTML =
+        '<div class="tk-gate__mark">⚠</div>' +
+        '<h2>Couldn’t confirm your access</h2>' +
+        '<p>You’re signed in, but we couldn’t reach the database to check your permissions — usually a connection hiccup.</p>' +
+        '<div class="tk-gate__actions">' +
+          '<button class="btn btn--primary" id="tk-gate-retry">Try again</button>' +
+          '<button class="btn btn--ghost btn--sm" id="tk-gate-offline">Use this device only for now</button>' +
+        '</div>' +
+        '<p class="tk-gate__fine">“This device only” means today’s work saves here but won’t sync until you reconnect.</p>';
+      var rr = $('tk-gate-retry');
+      if (rr) rr.addEventListener('click', function () { rr.disabled = true; rr.textContent = 'Checking…'; Sync.retryRole().then(function () { renderSync(); }).catch(function () { renderSync(); }); });
+      var of1 = $('tk-gate-offline');
+      if (of1) of1.addEventListener('click', function () { gateBypassed = true; renderSync(); });
+      return;
+    }
+
+    // Signed in, still checking access → calm blocking state.
+    if (s.signedIn && s.checking) {
+      card.innerHTML =
+        '<div class="tk-gate__mark">☁</div>' +
+        '<h2>Checking your access…</h2>' +
+        '<p>One moment while we confirm your permissions.</p>' +
+        '<p class="tk-gate__spin"><span class="tk-spinner"></span></p>';
+      return;
+    }
+
+    // Still connecting to Firebase and no error yet → connecting state.
     if (!s.ready && !syncError) {
-      gate.hidden = false;
       card.innerHTML =
         '<div class="tk-gate__mark">☁</div>' +
         '<h2>Connecting…</h2>' +
@@ -859,32 +889,34 @@
       return;
     }
 
-    gate.hidden = false;
+    // Couldn't reach Firebase at all → retry + safety escape.
     if (syncError) {
-      // Couldn't reach Firebase — offer sign-in retry AND a safety escape so she's never locked out.
       card.innerHTML =
         '<div class="tk-gate__mark">⚠</div>' +
         '<h2>Can’t reach sync right now</h2>' +
         '<p>' + esc(friendlyAuthError(syncError)) + '</p>' +
         '<div class="tk-gate__actions">' +
-          '<button class="btn btn--primary" id="tk-gate-retry">Try signing in again</button>' +
-          '<button class="btn btn--ghost btn--sm" id="tk-gate-offline">Use this device only for now</button>' +
+          '<button class="btn btn--primary" id="tk-gate-retry2">Try signing in again</button>' +
+          '<button class="btn btn--ghost btn--sm" id="tk-gate-offline2">Use this device only for now</button>' +
         '</div>' +
         '<p class="tk-gate__fine">“This device only” means today’s work saves here but won’t sync until you sign in.</p>';
-      var r = $('tk-gate-retry');
-      if (r) r.addEventListener('click', function () { syncError = null; renderSync(); Sync.init().then(function () { renderSync(); }).catch(function (e) { syncError = e; renderSync(); }); doSignIn(r); });
-      var off = $('tk-gate-offline');
-      if (off) off.addEventListener('click', function () { gateBypassed = true; renderSync(); });
+      var r2 = $('tk-gate-retry2');
+      if (r2) r2.addEventListener('click', function () { syncError = null; renderSync(); Sync.init().then(function () { renderSync(); }).catch(function (e) { syncError = e; renderSync(); }); doSignIn(r2); });
+      var of2 = $('tk-gate-offline2');
+      if (of2) of2.addEventListener('click', function () { gateBypassed = true; renderSync(); });
       return;
     }
 
     // Ready, not signed in → the required sign-in screen.
+    var deniedNote = s.denied
+      ? '<p class="tk-gate__fine" style="color:var(--red)">That account isn’t on the access list. Try a different Google account, or ask whoever set this up to add your email.</p>'
+      : '<p class="tk-gate__fine">Use the Google account that was given access. Not on the list yet? Ask whoever set this up to add your email.</p>';
     card.innerHTML =
       '<div class="tk-gate__mark">🔒</div>' +
       '<h2>Sign in to start</h2>' +
       '<p>Your tracker saves to a shared space so it’s safe on every device and your family can follow along. Sign in once — this device stays signed in after that.</p>' +
       '<div class="tk-gate__actions"><button class="btn btn--primary" id="tk-gate-in">Sign in with Google</button></div>' +
-      '<p class="tk-gate__fine">Use the Google account that was given access. Not on the list yet? Ask whoever set this up to add your email.</p>';
+      deniedNote;
     var gi = $('tk-gate-in');
     if (gi) gi.addEventListener('click', function () { doSignIn(gi); });
   }

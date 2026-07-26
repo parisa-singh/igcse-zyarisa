@@ -2,41 +2,31 @@
  *
  * Mirrors every tracker to a SHARED Firestore collection so any signed-in,
  * allowlisted person sees the same data live, on any device, anywhere.
- * The tracker keeps working fully offline with localStorage; this layer just
- * pushes/pulls on top. Stays completely DORMANT unless firebase-config.js has a
- * real apiKey — with no config, isConfigured() is false and nothing loads.
+ * The tracker keeps working with localStorage; this layer pushes/pulls on top.
+ * DORMANT unless firebase-config.js has a real apiKey.
  *
- * Data model (one shared space, no per-user split):
+ * PRIVACY: there is NO email list in this (public) code. After Google sign-in the
+ * app detects the person's role purely from what the Firestore rules allow:
+ *     can write → 'editor',  can only read → 'viewer',  can't read → no access.
+ * The real allowlist lives only in the console rules. See /firestore.rules.
+ *
+ * Data model (one shared space):
  *   trackers/{slug}  = { version, meta, slug, structure, ratings, savedAt, savedBy, updatedAt }
- *   activity/{auto}  = { slug, subjectName, by, greenPct, total, at }   (append-only feed)
- *
- * Roles come from window.SYNC_ALLOWLIST (editors edit, viewers read-only). The
- * REAL enforcement is the Firestore security rules — this is just for UX.
+ *   activity/{auto}  = { slug, subjectName, by, greenPct, total, at }
+ *   probe/{uid}      = write-only touch used once to detect editor rights
  *
  * Exposes window.Sync:
- *   Sync.isConfigured()                      -> bool (config present?)
- *   Sync.init()                              -> Promise (loads SDK, restores session)
- *   Sync.signIn() / Sync.signOut()           -> Promise
- *   Sync.state()                             -> { ready, signedIn, email, role }
- *   Sync.myEmail()                           -> string|null
- *   Sync.role()                              -> 'editor' | 'viewer' | null
- *   Sync.canWrite()                          -> bool (signed-in editor)
- *   Sync.pushTracker(slug, payload)          -> Promise (editors only)
- *   Sync.deleteTracker(slug)                 -> Promise (editors only)
- *   Sync.logActivity(entry)                  -> Promise (editors only, best-effort)
- *   Sync.subscribe(onDoc, onRemove)          -> unsubscribe fn  (live tracker changes)
- *   Sync.recentActivity(limitN)              -> Promise<[entry]>
- *   Sync.onStatus(cb)                        -> subscribe to state changes
+ *   isConfigured() init() signIn() signOut()
+ *   state() -> { ready, signedIn, checking, denied, roleError, email, role }
+ *   myEmail() role() canWrite()
+ *   pushTracker(slug, payload) deleteTracker(slug) logActivity(entry)
+ *   subscribe(onDoc, onRemove) recentActivity(n) onStatus(cb)
  */
 (function () {
   'use strict';
 
   var SDK = 'https://www.gstatic.com/firebasejs/12.16.0/';
-
   var cfg = window.FIREBASE_CONFIG || null;
-  var allow = window.SYNC_ALLOWLIST || { editors: [], viewers: [] };
-  var editors = (allow.editors || []).map(lc);
-  var viewers = (allow.viewers || []).map(lc);
 
   function lc(s) { return String(s || '').trim().toLowerCase(); }
   function isConfigured() {
@@ -45,23 +35,23 @@
 
   var fb = null;          // resolved SDK module handles
   var app = null, auth = null, db = null;
-  var current = { ready: false, signedIn: false, email: null, role: null };
+  var current = { ready: false, signedIn: false, checking: false, denied: false, roleError: false, email: null, role: null };
   var statusCbs = [];
   var initPromise = null;
+  var rolePromise = null;
+  var deniedEmail = null;
 
   function emit() { statusCbs.forEach(function (cb) { try { cb(state()); } catch (e) {} }); }
   function onStatus(cb) { statusCbs.push(cb); if (current.ready) { try { cb(state()); } catch (e) {} } }
-  function state() { return { ready: current.ready, signedIn: current.signedIn, email: current.email, role: current.role }; }
+  function state() {
+    return {
+      ready: current.ready, signedIn: current.signedIn, checking: current.checking,
+      denied: current.denied, roleError: current.roleError, email: current.email, role: current.role
+    };
+  }
   function myEmail() { return current.email; }
   function role() { return current.role; }
   function canWrite() { return current.signedIn && current.role === 'editor'; }
-
-  function roleFor(email) {
-    var e = lc(email);
-    if (editors.indexOf(e) !== -1) return 'editor';
-    if (viewers.indexOf(e) !== -1) return 'viewer';
-    return null;
-  }
 
   /* Load the Firebase modular SDK (ESM) via dynamic import — no build step. */
   function loadSDK() {
@@ -82,20 +72,20 @@
       app = fb.app.initializeApp(cfg);
       auth = fb.auth.getAuth(app);
       db = fb.store.getFirestore(app);
-      // Persist the session across reloads/devices-of-the-same-browser.
       return fb.auth.setPersistence(auth, fb.auth.browserLocalPersistence).catch(function () {});
     }).then(function () {
       return new Promise(function (resolve) {
         fb.auth.onAuthStateChanged(auth, function (user) {
           if (user && user.email) {
-            current.signedIn = true;
-            current.email = lc(user.email);
-            current.role = roleFor(user.email);
+            current.signedIn = true; current.email = lc(user.email);
+            current.role = null; current.denied = false; current.roleError = false; current.ready = true;
+            emit();
+            ensureRole().catch(function () {}); // role resolves async, emits again
           } else {
             current.signedIn = false; current.email = null; current.role = null;
+            current.checking = false; current.roleError = false; current.ready = true;
+            emit();
           }
-          current.ready = true;
-          emit();
           resolve(state());
         });
       });
@@ -106,18 +96,53 @@
     return initPromise;
   }
 
+  /* Detect role from permissions: read allowed? then editor if a probe write works. */
+  function detectRole() {
+    var trackers = fb.store.collection(db, 'trackers');
+    return fb.store.getDocs(fb.store.query(trackers, fb.store.limit(1)))
+      .then(function () {
+        // Reading works → at least a viewer. Test write to decide editor vs viewer.
+        var uid = auth.currentUser && auth.currentUser.uid;
+        return fb.store.setDoc(fb.store.doc(db, 'probe', uid), { at: fb.store.serverTimestamp() })
+          .then(function () { return 'editor'; })
+          .catch(function () { return 'viewer'; });
+      })
+      .catch(function (err) {
+        var m = ((err && err.code) || '') + ' ' + ((err && err.message) || '');
+        if (/permission|insufficient|denied/i.test(m)) return null; // not on the allowlist
+        throw err; // network/other — don't wrongly deny
+      });
+  }
+
+  /* Single-flight role resolution for the current session. */
+  function ensureRole() {
+    if (!current.signedIn) return Promise.resolve(null);
+    if (current.role) return Promise.resolve(current.role);
+    if (rolePromise) return rolePromise;
+    current.checking = true; current.roleError = false; emit();
+    rolePromise = detectRole().then(function (r) {
+      current.checking = false; rolePromise = null;
+      if (!r) {
+        deniedEmail = current.email; current.denied = true;
+        return fb.auth.signOut(auth).then(function () { return null; }); // triggers signed-out state
+      }
+      current.role = r; emit();
+      return r;
+    }).catch(function (err) {
+      current.checking = false; current.roleError = true; rolePromise = null; emit();
+      throw err;
+    });
+    return rolePromise;
+  }
+
   function signIn() {
     return init().then(function () {
       var provider = new fb.auth.GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-      return fb.auth.signInWithPopup(auth, provider).then(function (res) {
-        var email = res && res.user && res.user.email;
-        if (!roleFor(email)) {
-          // Signed in with Google fine, but not on the allowlist. Sign back out.
-          return fb.auth.signOut(auth).then(function () {
-            throw new Error(email + ' is not on the access list yet. Ask the owner to add this address.');
-          });
-        }
+      return fb.auth.signInWithPopup(auth, provider);
+    }).then(function () {
+      return ensureRole().then(function (r) {
+        if (!r) throw new Error((deniedEmail || 'That account') + ' isn’t on the access list yet. Ask whoever set this up to add your email.');
         return state();
       });
     });
@@ -131,8 +156,7 @@
   /* ---- writes (editors only) --------------------------------------------- */
   function pushTracker(slug, payload) {
     if (!canWrite() || !db) return Promise.resolve();
-    var ref = fb.store.doc(db, 'trackers', slug);
-    var doc = {
+    var docData = {
       version: payload.version || 1,
       meta: payload.meta || null,
       slug: slug,
@@ -142,8 +166,7 @@
       savedBy: current.email,
       updatedAt: fb.store.serverTimestamp()
     };
-    return fb.store.setDoc(ref, doc).catch(function (e) {
-      // Sync is best-effort — a failed push must never break local saving.
+    return fb.store.setDoc(fb.store.doc(db, 'trackers', slug), docData).catch(function (e) {
       if (window.console) console.warn('[Sync] push failed:', e && e.message);
     });
   }
@@ -158,9 +181,7 @@
   function logActivity(entry) {
     if (!canWrite() || !db) return Promise.resolve();
     var e = {
-      slug: entry.slug || '',
-      subjectName: entry.subjectName || '',
-      by: current.email,
+      slug: entry.slug || '', subjectName: entry.subjectName || '', by: current.email,
       greenPct: typeof entry.greenPct === 'number' ? entry.greenPct : null,
       total: typeof entry.total === 'number' ? entry.total : null,
       at: fb.store.serverTimestamp()
@@ -169,16 +190,14 @@
   }
 
   /* ---- live reads --------------------------------------------------------- */
-  /* onDoc(slug, data) fires per added/changed tracker; onRemove(slug) per delete. */
   function subscribe(onDoc, onRemove) {
     if (!db) return function () {};
     var col = fb.store.collection(db, 'trackers');
     return fb.store.onSnapshot(col, function (snap) {
       snap.docChanges().forEach(function (chg) {
-        var data = chg.doc.data();
         var slug = chg.doc.id;
         if (chg.type === 'removed') { if (onRemove) onRemove(slug); }
-        else { if (onDoc) onDoc(slug, data); }
+        else { if (onDoc) onDoc(slug, chg.doc.data()); }
       });
     }, function (err) {
       if (window.console) console.warn('[Sync] subscribe error:', err && err.message);
@@ -204,19 +223,10 @@
   }
 
   window.Sync = {
-    isConfigured: isConfigured,
-    init: init,
-    signIn: signIn,
-    signOut: signOut,
-    state: state,
-    myEmail: myEmail,
-    role: role,
-    canWrite: canWrite,
-    pushTracker: pushTracker,
-    deleteTracker: deleteTracker,
-    logActivity: logActivity,
-    subscribe: subscribe,
-    recentActivity: recentActivity,
-    onStatus: onStatus
+    isConfigured: isConfigured, init: init, signIn: signIn, signOut: signOut,
+    retryRole: ensureRole,
+    state: state, myEmail: myEmail, role: role, canWrite: canWrite,
+    pushTracker: pushTracker, deleteTracker: deleteTracker, logActivity: logActivity,
+    subscribe: subscribe, recentActivity: recentActivity, onStatus: onStatus
   };
 })();

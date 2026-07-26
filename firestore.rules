@@ -1,44 +1,41 @@
 rules_version = '2';
 
-// ── IGCSE Playbook — Firestore security rules ────────────────────────────────
-// Locks the shared tracker data to specific Google accounts.
-//   editors  → can READ and WRITE every tracker + write the activity feed
-//   viewers  → can READ everything, but cannot change anything (e.g. parents)
+// ── IGCSE Playbook — Firestore security rules (TEMPLATE) ─────────────────────
+// ⚠️ This repo file is PUBLIC — keep it a template with NO real emails.
+// The LIVE rules (with the real family emails) live only in the Firebase console:
+//     Firebase console → Build → Firestore Database → Rules tab → paste → Publish.
+// That console copy is private; this file is just a reference for the structure.
+//
+//   editors → can READ and WRITE every tracker + write the activity feed
+//   viewers → can READ everything, but cannot change anything (e.g. parents)
 //   everyone else (and anyone not signed in) → no access at all.
 //
-// HOW TO PUBLISH:
-//   Firebase console → Build → Firestore Database → Rules tab →
-//   paste this whole file over what's there → Publish.
+// The app has no email list; it detects each person's role from these rules:
+//   probe write allowed → editor · tracker read allowed → viewer · neither → denied.
 //
-// TO ADD SOMEONE: add their lowercase Gmail to editors() or viewers() below,
-// re-Publish here, AND add the same email to /assets/js/firebase-config.js.
-// (Both must match: this file is the real lock; the JS file is only for the UI.)
+// TO ADD SOMEONE: edit the console copy's editors()/viewers() list → Publish.
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 🔑 EDIT THESE TWO LISTS. Keep in sync with assets/js/firebase-config.js.
+    // 🔑 In the CONSOLE copy, put the real lowercase Gmail addresses here.
     function editors() {
       return [
-        'parisasingh@gmail.com'                  // ← you (owner).
-        // , 'her-new-gmail@gmail.com'            // ← your sister, once you have her address.
+        'owner@example.com'      // ← replace in console with the editors' real emails
       ];
     }
     function viewers() {
       return [
-        // 'mom@gmail.com',
-        // 'dad@gmail.com'
+        // 'viewer@example.com'  // ← replace in console with the viewers' real emails
       ];
     }
 
-    // A signed-in account with a verified email.
     function signedIn() {
       return request.auth != null && request.auth.token.email_verified == true;
     }
     function isEditor() {
       return signedIn() && (request.auth.token.email in editors());
     }
-    // Editors are also allowed to read, so viewer-read = editor OR viewer.
     function canRead() {
       return signedIn() && (
         request.auth.token.email in editors() ||
@@ -54,7 +51,13 @@ service cloud.firestore {
     match /activity/{entry} {
       allow read:   if canRead();
       allow create: if isEditor();
-      allow update, delete: if false;   // activity feed is append-only
+      allow update, delete: if false;   // append-only
+    }
+
+    // Write-only probe the app uses once to detect editor rights.
+    match /probe/{uid} {
+      allow read: if false;
+      allow write: if isEditor() && request.auth.uid == uid;
     }
 
     // Everything else: denied.
