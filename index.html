@@ -32,13 +32,30 @@
         </div>
         <div class="play-hero__msg">
           <h2 id="hero-title">Start your first tracker</h2>
-          <p id="hero-sub">Load a syllabus, rate each topic red / amber / green, and watch this ring fill up over the next two years. It saves automatically.</p>
+          <p id="hero-sub">Load a syllabus, rate each topic red / amber / green, and watch this ring fill up over the next two years.</p>
           <div class="btn-row">
             <a class="btn btn--primary" id="hero-cta" href="/igcse-zyarisa/tracker/index.html">Start a tracker →</a>
-            <a class="btn btn--ghost" id="hero-cta2" href="/igcse-zyarisa/tracker/index.html" style="display:none">Switch subject</a>
+            <a class="btn btn--ghost" id="hero-cta2" href="/igcse-zyarisa/tracker/index.html" style="display:none">Open tracker</a>
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS BOARD (every subject, red / amber / green) -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head" style="margin-bottom: var(--space-4);">
+        <span class="eyebrow">Your progress</span>
+        <h2>Every subject at a glance</h2>
+      </div>
+      <div class="subj-board" id="subj-board"></div>
+      <p class="subj-legend u-xs" style="margin-top: var(--space-3);">
+        <span class="subj-key"><i class="subj-dot subj-dot--green"></i>Green — confident</span>
+        <span class="subj-key"><i class="subj-dot subj-dot--amber"></i>Amber — getting there</span>
+        <span class="subj-key"><i class="subj-dot subj-dot--red"></i>Red — not yet</span>
+        <span class="subj-key"><i class="subj-dot subj-dot--unrated"></i>Not rated</span>
+      </p>
     </div>
   </section>
 
@@ -160,25 +177,39 @@
       var cd = document.getElementById('cd-days');
       if (cd) cd.textContent = days.toLocaleString();
 
-      // Read the most-recent tracker from localStorage and reflect real progress.
-      function loadLast() {
-        var last = localStorage.getItem('igcse-tracker-last');
-        var raw = last && localStorage.getItem('igcse-tracker-' + last);
-        if (!raw) {
-          for (var i = 0; i < localStorage.length; i++) {
-            var k = localStorage.key(i);
-            if (k && k.indexOf('igcse-tracker-') === 0 && k !== 'igcse-tracker-last') { raw = localStorage.getItem(k); break; }
-          }
-        }
-        try { return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+      // The nine subjects, in tracker-slug order (matches the tracker's slugs).
+      var SUBJECTS = [
+        { slug: 'international-math', name: 'International Maths', code: '0607' },
+        { slug: 'physics', name: 'Physics', code: '0625' },
+        { slug: 'computer-science', name: 'Computer Science', code: '0478' },
+        { slug: 'business', name: 'Business', code: '0450' },
+        { slug: 'economics', name: 'Economics', code: '0455' },
+        { slug: 'english-language', name: 'English Language', code: '0500' },
+        { slug: 'english-literature', name: 'English Literature', code: '0475' },
+        { slug: 'french', name: 'French', code: '0520' },
+        { slug: 'psychology', name: 'Psychology', code: '0980' }
+      ];
+      var TRACKER = '/igcse-zyarisa/tracker/index.html';
+
+      function load(slug) {
+        try { var raw = localStorage.getItem('igcse-tracker-' + slug); return raw ? JSON.parse(raw) : null; }
+        catch (e) { return null; }
       }
-      function summarize(d) {
-        var t = 0, g = 0, r = (d.ratings && d.ratings.topic) || {};
-        (d.structure.units || []).forEach(function (u) {
-          (u.topics || []).forEach(function (tp) { t++; if ((r[tp.id] && r[tp.id].status) === 'green') g++; });
+      // Topic-level red/amber/green/unrated counts for one tracker object.
+      function rag(d) {
+        var c = { green: 0, amber: 0, red: 0, unrated: 0, total: 0 };
+        var r = (d.ratings && d.ratings.topic) || {};
+        ((d.structure && d.structure.units) || []).forEach(function (u) {
+          (u.topics || []).forEach(function (tp) {
+            c.total++;
+            var s = (r[tp.id] && r[tp.id].status) || 'unrated';
+            c[s] = (c[s] || 0) + 1;
+          });
         });
-        return { total: t, green: g, pct: t ? Math.round(g / t * 100) : 0 };
+        return c;
       }
+      function pctOf(n, total) { return total ? Math.round(n / total * 100) : 0; }
+      function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
       function message(pct) {
         if (pct === 0) return "Every green starts out red. Let's begin. 🌱";
         if (pct < 30) return "Nice start — keep chipping away. 💪";
@@ -186,21 +217,64 @@
         return "You're on fire — look how far you've come. 🔥";
       }
 
-      var d = loadLast();
-      if (d && d.structure) {
-        var s = summarize(d);
-        var name = (d.meta && d.meta.name) || 'your subject';
-        document.getElementById('ring-pct').textContent = s.pct + '%';
-        // animate the ring fill
-        var ring = document.getElementById('ring');
-        setTimeout(function () { ring.style.setProperty('--p', s.pct); }, 150);
-        document.getElementById('hero-title').textContent = s.pct + '% green in ' + name;
-        document.getElementById('hero-sub').textContent = message(s.pct) + ' ' + s.green + ' of ' + s.total + ' topics are solid.';
-        var cta = document.getElementById('hero-cta');
-        cta.textContent = 'Open ' + name + ' →';
-        document.getElementById('hero-cta2').style.display = '';
-      } else {
-        document.getElementById('ring-pct').textContent = '0%';
+      // Build a row per subject (started or not) + any custom (non-subject) trackers.
+      var board = document.getElementById('subj-board');
+      var overall = { green: 0, amber: 0, red: 0, unrated: 0, total: 0 };
+      var startedCount = 0;
+      var seen = {};
+      var rowsHTML = '';
+
+      function rowHTML(name, code, slug, d) {
+        var href = TRACKER + (slug ? '?subject=' + encodeURIComponent(slug) : '');
+        if (!d || !d.structure) {
+          return '<a class="subj-row subj-row--empty" href="' + href + '">' +
+            '<div class="subj-row__head"><span class="subj-row__name">' + esc(name) +
+            (code ? '<span class="subj-row__code">' + esc(code) + '</span>' : '') + '</span>' +
+            '<span class="subj-row__pct">Not started</span></div>' +
+            '<div class="subj-bar"><div class="subj-bar__seg subj-bar__seg--unrated" style="width:100%"></div></div>' +
+            '<div class="subj-row__meta">Tap to start this tracker →</div></a>';
+        }
+        var c = rag(d);
+        startedCount++;
+        ['green', 'amber', 'red', 'unrated', 'total'].forEach(function (k) { overall[k] += c[k]; });
+        var gp = pctOf(c.green, c.total), ap = pctOf(c.amber, c.total), rp = pctOf(c.red, c.total);
+        var up = Math.max(0, 100 - gp - ap - rp);
+        return '<a class="subj-row" href="' + href + '">' +
+          '<div class="subj-row__head"><span class="subj-row__name">' + esc(name) +
+          (code ? '<span class="subj-row__code">' + esc(code) + '</span>' : '') + '</span>' +
+          '<span class="subj-row__pct">' + gp + '% green</span></div>' +
+          '<div class="subj-bar">' +
+            '<div class="subj-bar__seg subj-bar__seg--green" style="width:' + gp + '%"></div>' +
+            '<div class="subj-bar__seg subj-bar__seg--amber" style="width:' + ap + '%"></div>' +
+            '<div class="subj-bar__seg subj-bar__seg--red" style="width:' + rp + '%"></div>' +
+            '<div class="subj-bar__seg subj-bar__seg--unrated" style="width:' + up + '%"></div>' +
+          '</div>' +
+          '<div class="subj-row__meta">' + c.green + ' green · ' + c.amber + ' amber · ' + c.red + ' red · ' + c.unrated + ' unrated · ' + c.total + ' topics</div></a>';
+      }
+
+      SUBJECTS.forEach(function (subj) { seen[subj.slug] = true; rowsHTML += rowHTML(subj.name, subj.code, subj.slug, load(subj.slug)); });
+      // Any trackers under a custom (non-subject) slug — show them too.
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('igcse-tracker-') === 0 && k !== 'igcse-tracker-last') {
+          var slug = k.slice('igcse-tracker-'.length);
+          if (seen[slug]) continue;
+          var d2 = load(slug);
+          if (d2 && d2.structure) rowsHTML += rowHTML((d2.meta && d2.meta.name) || slug, (d2.meta && d2.meta.code) || '', null, d2);
+        }
+      }
+      if (board) board.innerHTML = rowsHTML;
+
+      // Hero ring = overall green % across every started subject.
+      var ring = document.getElementById('ring');
+      var opct = pctOf(overall.green, overall.total);
+      document.getElementById('ring-pct').textContent = (overall.total ? opct : 0) + '%';
+      if (ring) setTimeout(function () { ring.style.setProperty('--p', opct); }, 150);
+      if (overall.total) {
+        document.getElementById('hero-title').textContent = opct + '% green across ' + startedCount + ' subject' + (startedCount === 1 ? '' : 's');
+        document.getElementById('hero-sub').textContent = message(opct) + ' ' + overall.green + ' of ' + overall.total + ' topics are solid — see each subject below.';
+        var cta = document.getElementById('hero-cta'); cta.textContent = 'Open tracker →';
+        document.getElementById('hero-cta2').style.display = 'none';
       }
     })();
   </script>

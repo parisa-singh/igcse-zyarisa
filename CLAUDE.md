@@ -152,9 +152,14 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
 - User rejected the plain dashboard; chose **playful / gamified** (bright, rounded, warm, motivating —
   Duolingo-ish but professional). HOME (index.html, data-no-toc) rebuilt in this style:
   - Live **exam countdown** to 2028-05-04 (inline script).
-  - **Progress ring** (.ring, conic-gradient donut) that READS the real tracker from localStorage
-    (`igcse-tracker-last` → its object), computes topic-level green %, animates the fill, and shows
-    encouraging messages that scale with pct. Falls back to "start your first tracker" when none.
+  - **Progress ring** (.ring, conic-gradient donut) — now shows OVERALL green % across ALL started
+    subjects (sum of topic-level greens ÷ total), animates fill, encouraging message scales with pct.
+  - **Progress board (2026-07-26)**: new "Every subject at a glance" section under the hero. Hardcoded
+    9-SUBJECTS list (slug/name/code, matching tracker slugs); reads each `igcse-tracker-{slug}` from
+    localStorage, renders a per-subject stacked RAG bar (green/amber/red/unrated) + counts, links to
+    tracker?subject={slug}. Not-started subjects show a grey "Not started" row; custom-slug trackers
+    appended after the 9. Styles: main.css **§22** (.subj-board/.subj-row/.subj-bar/.subj-dot). NOTE:
+    reads localStorage only — a signed-in user sees synced data once the tracker has cached it locally.
   - Big rounded colorful **action cards** (.play-card--tracker/study/papers/resources), .play-grid.
   - Kept .path timeline + .subject-strip; note trimmed.
   - Components: main.css **§21** (playful) + §20 (hub tiles/path/strip, still used).
