@@ -168,6 +168,23 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
 - Hamburger moved to LEFT on mobile (order: -2); ToC/FAB already left.
 - resources.md is the canonical resource source (keep in sync). Access badges green/amber/red.
 
+## Explicit-save + viewer read-only (2026-07-26)
+- SAVE MODEL CHANGED: edits no longer auto-save. Old `save()` split into `persist()` (writes
+  localStorage + cloud push + activity; sets dirty=false, lastSavedAt) and `markDirty()` (in-memory
+  only, sets `dirty=true`). All mutations (setRating/setNotes/editText/deleteRow/addTopic/addObjective/
+  add-unit) call markDirty(); NOTHING persists until the user clicks the new **#tk-btn-save** ("💾 Save
+  changes" when dirty / "✓ All changes saved" when clean). adopt() still persist()s immediately (new
+  tracker saved on creation). openStored() sets dirty=false + confirms before discarding unsaved edits.
+  `beforeunload` warns if dirty. mergeRemoteDoc SKIPS the open tracker while dirty (won't clobber
+  unsaved edits). renderSaveState() drives button + #tk-save-info text.
+- VIEWER READ-ONLY: isViewer()/canEditData() (signed-in Firebase role==='viewer'). Every mutation +
+  input handler (handlePdf/handlePaste/handleSelectSubject/importJSON/deleteTracker) guards on it.
+  `document.body.classList.toggle('tk-viewer', …)` in renderSync; tracker.css `.tk-viewer` hides input
+  paths, add/del buttons, save button, import; makes .tk-light + .tk-inline-edit pointer-events:none.
+- ROLE EXPLAINER: one-time gate "welcome" screen after INTERACTIVE sign-in (justSignedIn flag set in
+  doSignIn) — "You're an Editor/Viewer" + 1-2 sentence explanation + Continue. Session-restore skips it
+  (just the sync bar shows role: "Editor — you can edit; saves sync" / "Viewer — read-only").
+
 ## Tracker architecture notes (for future edits)
 - Persistence: ONE object per subject at localStorage `igcse-tracker-{slug}` = {meta, structure, ratings, savedAt}.
   ratings has independent `topic` and `objective` maps (rowId → {status, notes, updated}). Last subject at `igcse-tracker-last`.

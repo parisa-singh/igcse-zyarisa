@@ -54,8 +54,37 @@
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function storageKey(slug) { return 'igcse-tracker-' + slug; }
 
+  /* ---- role helpers — a signed-in viewer gets a strictly read-only tracker -- */
+  function isViewer() { return !!(window.Sync && Sync.isConfigured && Sync.isConfigured() && Sync.state().signedIn && Sync.role && Sync.role() === 'viewer'); }
+  function canEditData() { return !isViewer(); }
+
   /* ---- persistence -------------------------------------------------------- */
-  function save() {
+  // Edits no longer auto-save. Mutations call markDirty(); nothing is written to
+  // this browser OR the cloud until the user clicks "Save changes" → persist().
+  var dirty = false;         // unsaved changes pending?
+  var lastSavedAt = '';      // human-readable time of last successful save
+
+  function markDirty() { if (!state.slug) return; dirty = true; renderSaveState(); }
+
+  function renderSaveState() {
+    var btn = el.saveBtn, info = el.saveInfo;
+    if (btn) {
+      if (!state.slug || isViewer()) { btn.style.display = 'none'; }
+      else {
+        btn.style.display = '';
+        btn.disabled = !dirty;
+        btn.textContent = dirty ? '💾 Save changes' : '✓ All changes saved';
+        btn.classList.toggle('tk-btn-dirty', dirty);
+      }
+    }
+    if (info) {
+      if (!state.slug) info.textContent = 'No tracker open.';
+      else if (dirty) info.innerHTML = '<span class="tk-unsaved">●</span> Unsaved changes — click Save.';
+      else info.innerHTML = lastSavedAt ? '<span class="tk-saved-tick">✓</span> Saved · ' + lastSavedAt : 'Not saved yet.';
+    }
+  }
+
+  function persist() {
     if (!state.slug) return;
     var payload = {
       version: 1,
@@ -68,11 +97,12 @@
     try {
       localStorage.setItem(storageKey(state.slug), JSON.stringify(payload));
       localStorage.setItem('igcse-tracker-last', state.slug);
-      if (el.saveInfo) el.saveInfo.innerHTML = '<span class="tk-saved-tick">✓</span> Saved · ' + timeStr();
+      dirty = false; lastSavedAt = timeStr(); renderSaveState();
     } catch (e) {
       if (el.saveInfo) el.saveInfo.textContent = 'Could not save (storage full?).';
+      return;
     }
-    // Best-effort mirror to the shared cloud space (editors only; no-op otherwise).
+    // On save, mirror to the shared cloud space (editors only; no-op otherwise).
     if (window.Sync && Sync.canWrite && Sync.canWrite()) {
       Sync.pushTracker(state.slug, payload);
       var c = counts();
@@ -101,8 +131,9 @@
     state.filter = 'all';
     state.tier = 'all';
     hidePreview();
+    dirty = false;
     render();
-    save();
+    persist();          // a freshly generated/loaded tracker is saved right away
   }
 
   // Ensure every node has an id; used for both parsed and loaded structures.
@@ -156,22 +187,24 @@
 
   /* ---- rating actions ----------------------------------------------------- */
   function setRating(id, status) {
+    if (!canEditData()) return;
     var map = state.ratings[state.view];
     var cur = map[id] || { status: 'unrated', notes: '', updated: null };
     cur.status = status;
     cur.updated = todayStr();
     map[id] = cur;
-    save();
+    markDirty();
     renderProgress();
     // Update just this row's UI
     updateRowUI(id);
   }
   function setNotes(id, notes) {
+    if (!canEditData()) return;
     var map = state.ratings[state.view];
     var cur = map[id] || { status: 'unrated', notes: '', updated: null };
     cur.notes = notes;
     map[id] = cur;
-    save();
+    markDirty();
   }
 
   /* ---- structure editing -------------------------------------------------- */
@@ -181,6 +214,7 @@
     return res;
   }
   function editText(kind, id, text) {
+    if (!canEditData()) return;
     state.structure.units.forEach(function (u) {
       if (kind === 'unit' && u.id === id) u.title = text;
       u.topics.forEach(function (t) {
@@ -188,29 +222,32 @@
         t.objectives.forEach(function (o) { if (kind === 'obj' && o.id === id) o.text = text; });
       });
     });
-    save();
+    markDirty();
   }
   function deleteRow(kind, id) {
+    if (!canEditData()) return;
     state.structure.units.forEach(function (u) {
       if (kind === 'topic') u.topics = u.topics.filter(function (t) { return t.id !== id; });
       if (kind === 'obj') u.topics.forEach(function (t) { t.objectives = t.objectives.filter(function (o) { return o.id !== id; }); });
     });
     if (kind === 'unit') state.structure.units = state.structure.units.filter(function (u) { return u.id !== id; });
     delete state.ratings.topic[id]; delete state.ratings.objective[id];
-    save(); render();
+    markDirty(); render();
   }
   function addTopic(unitId) {
+    if (!canEditData()) return;
     var u = state.structure.units.filter(function (x) { return x.id === unitId; })[0];
     if (!u) return;
     var id = unitId + '.t' + (u.topics.length + 1) + '-' + Date.now().toString(36);
     u.topics.push({ id: id, title: 'New topic', objectives: [] });
-    save(); render();
+    markDirty(); render();
   }
   function addObjective(topicId) {
+    if (!canEditData()) return;
     var found = findTopic(topicId); if (!found) return;
     var id = topicId + '.o' + (found.topic.objectives.length + 1) + '-' + Date.now().toString(36);
     found.topic.objectives.push({ id: id, text: 'New learning objective', demandVerb: '', demandLevel: null, tier: null });
-    save(); render();
+    markDirty(); render();
   }
 
   /* ---- rendering ---------------------------------------------------------- */
@@ -251,7 +288,7 @@
         var a = b.getAttribute('data-act');
         if (a === 'expand') { state.collapsed = {}; renderTable(); }
         else if (a === 'collapse') { state.structure.units.forEach(function (u) { state.collapsed[u.id] = true; }); renderTable(); }
-        else if (a === 'add-unit') { var id = 'u-' + Date.now().toString(36); state.structure.units.push({ id: id, title: 'New unit', topics: [] }); save(); render(); }
+        else if (a === 'add-unit') { if (!canEditData()) return; var id = 'u-' + Date.now().toString(36); state.structure.units.push({ id: id, title: 'New unit', topics: [] }); markDirty(); render(); }
       });
     });
   }
@@ -509,6 +546,7 @@
 
   /* ---- input paths -------------------------------------------------------- */
   function handlePdf(file) {
+    if (isViewer()) { status('You’re signed in as a viewer — the tracker is read-only for you.', 'warn'); return; }
     if (!file) return;
     state._src = 'pdf';
     status('<span class="tk-spinner"></span>Reading and parsing “' + esc(file.name) + '”…', 'busy');
@@ -522,6 +560,7 @@
     });
   }
   function handlePaste(text) {
+    if (isViewer()) { status('You’re signed in as a viewer — the tracker is read-only for you.', 'warn'); return; }
     if (!text || !text.trim()) { status('Paste some syllabus text first.', 'warn'); return; }
     state._src = 'paste';
     var result = window.Parser.parseSyllabus(text);
@@ -530,6 +569,7 @@
     showPreview(result, 'My Syllabus', detectCode(text));
   }
   function handleSelectSubject(slug) {
+    if (isViewer()) { status('You’re signed in as a viewer — the tracker is read-only for you.', 'warn'); return; }
     if (!slug) return;
     state._src = 'select';
     var meta = (window.__SUBJECTS__ && window.__SUBJECTS__[slug]) || null;
@@ -549,6 +589,7 @@
   }
 
   function openStored(slug) {
+    if (dirty && slug !== state.slug && !confirm('You have unsaved changes that will be lost. Open this tracker anyway?')) return false;
     var stored = loadStored(slug);
     if (!stored) return false;
     state.slug = slug;
@@ -557,7 +598,9 @@
     state.ratings = stored.ratings && stored.ratings.topic ? stored.ratings : { topic: {}, objective: {} };
     state.view = 'topic'; state.filter = 'all'; state.tier = 'all'; state.collapsed = {};
     hidePreview(); clearStatus(); render();
-    if (el.saveInfo && stored.savedAt) el.saveInfo.innerHTML = '<span class="tk-saved-tick">✓</span> Saved · ' + new Date(stored.savedAt).toLocaleString();
+    dirty = false;
+    lastSavedAt = stored.savedAt ? new Date(stored.savedAt).toLocaleString() : '';
+    renderSaveState();
     return true;
   }
 
@@ -592,6 +635,7 @@
   }
 
   function deleteTracker(slug) {
+    if (isViewer()) return;
     localStorage.removeItem(storageKey(slug));
     if (localStorage.getItem('igcse-tracker-last') === slug) localStorage.removeItem('igcse-tracker-last');
     if (window.Sync && Sync.canWrite && Sync.canWrite()) Sync.deleteTracker(slug);
@@ -666,6 +710,7 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
   }
   function importJSON(file) {
+    if (isViewer()) { status('You’re signed in as a viewer — the tracker is read-only for you.', 'warn'); return; }
     if (!file) return;
     var reader = new FileReader();
     reader.onload = function () {
@@ -773,6 +818,7 @@
   var seededLocalUp = false;
   var syncError = null;      // set if Firebase couldn't be reached
   var gateBypassed = false;  // user chose "use this device only" after an error
+  var justSignedIn = false;  // show the one-time role explainer after interactive sign-in
 
   // Turn raw Firebase auth errors into calm, human sentences.
   function friendlyAuthError(e) {
@@ -787,9 +833,10 @@
 
   function doSignIn(btn) {
     if (btn) { btn.disabled = true; btn.textContent = 'Opening Google…'; }
+    justSignedIn = true;   // show the role explainer once this sign-in resolves
     return Sync.signIn()
-      .then(function () { syncError = null; status('Signed in — your work now syncs across devices.', 'ok'); })
-      .catch(function (e) { status(esc(friendlyAuthError(e)), 'warn'); renderSync(); });
+      .then(function () { syncError = null; })
+      .catch(function (e) { justSignedIn = false; status(esc(friendlyAuthError(e)), 'warn'); renderSync(); });
   }
 
   function renderSync() {
@@ -799,6 +846,9 @@
       return;
     }
     var s = Sync.state();
+    // Viewer → strictly read-only tracker (CSS hides edit affordances; JS guards block writes).
+    document.body.classList.toggle('tk-viewer', s.signedIn && s.role === 'viewer');
+    renderSaveState();
     renderSyncBar(s);
     renderGate(s);
 
@@ -821,7 +871,7 @@
       return;
     }
     if (s.signedIn && s.role) {
-      var roleLabel = s.role === 'editor' ? 'Editor — edits sync live' : 'Viewer — read only';
+      var roleLabel = s.role === 'editor' ? 'Editor — you can edit; saves sync' : 'Viewer — read-only';
       bar.className = 'tk-syncbar tk-syncbar--on';
       bar.innerHTML =
         '<span class="tk-syncbar__msg">✓ Synced as <strong>' + esc(s.email) + '</strong> · ' + roleLabel + '</span>' +
@@ -846,8 +896,27 @@
     var gate = el.gate, card = el.gateCard;
     if (!gate || !card) return;
 
-    // Confirmed access, or user chose to work offline after an error → no gate.
-    if ((s.signedIn && s.role) || gateBypassed) { gate.hidden = true; return; }
+    // User chose to work offline after an error → no gate.
+    if (gateBypassed) { gate.hidden = true; return; }
+
+    // Access confirmed → a one-time role explainer right after an interactive
+    // sign-in; a restored session just shows the status bar (no gate).
+    if (s.signedIn && s.role) {
+      if (!justSignedIn) { gate.hidden = true; return; }
+      gate.hidden = false;
+      var isEd = s.role === 'editor';
+      card.innerHTML =
+        '<div class="tk-gate__mark">' + (isEd ? '✏️' : '👁️') + '</div>' +
+        '<h2>' + (isEd ? 'You’re an Editor' : 'You’re a Viewer') + '</h2>' +
+        '<p>' + (isEd
+          ? 'You can build and edit trackers. Your changes stay on this device until you click <strong>Save changes</strong> — then they sync live to every device and to everyone with access.'
+          : 'You can see every tracker and its progress, updated live — but it’s <strong>read-only</strong> for you, so nothing you do changes the data.') + '</p>' +
+        '<div class="tk-gate__actions"><button class="btn btn--primary" id="tk-gate-continue">Got it — continue</button></div>' +
+        '<p class="tk-gate__fine">Signed in as ' + esc(s.email) + '.</p>';
+      var cont = $('tk-gate-continue');
+      if (cont) cont.addEventListener('click', function () { justSignedIn = false; renderSync(); });
+      return;
+    }
 
     gate.hidden = false;
 
@@ -924,6 +993,11 @@
   // A remote tracker arrived/changed → adopt into localStorage if newer, refresh UI.
   function mergeRemoteDoc(slug, remote) {
     if (!remote || !remote.structure) return;
+    // Don't overwrite the open tracker while it has unsaved edits — let the user save/discard first.
+    if (state.slug === slug && dirty) {
+      status('Newer changes are available from ' + esc(remote.savedBy || 'another device') + ' — save or reload yours to see them.', 'warn');
+      return;
+    }
     var local = loadStored(slug);
     var rt = remote.savedAt || '', lt = (local && local.savedAt) || '';
     if (local && rt <= lt) return; // ours is same/newer — keep it
@@ -967,7 +1041,7 @@
     el = {
       subjectName: $('tk-subject-name'), progress: $('tk-progress'),
       viewToggle: $('tk-view-toggle'), filters: $('tk-filters'), tierFilter: $('tk-tier-filter'),
-      saveInfo: $('tk-save-info'), driveArea: $('tk-drive-area'),
+      saveInfo: $('tk-save-info'), driveArea: $('tk-drive-area'), saveBtn: $('tk-btn-save'),
       syncBar: $('tk-sync-bar'), gate: $('tk-gate'), gateCard: $('tk-gate-card'),
       status: $('tk-status'), preview: $('tk-preview'), toolbar: $('tk-toolbar'), tableWrap: $('tk-table-wrap'),
       modal: $('tk-modal-backdrop'), modalContent: $('tk-modal-content'),
@@ -1006,11 +1080,15 @@
     if (el.tierFilter) el.tierFilter.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { state.tier = b.getAttribute('data-tier'); renderTierFilter(); renderProgress(); renderTable(); }); });
 
     // Save controls
+    if (el.saveBtn) el.saveBtn.addEventListener('click', function () { if (dirty) { persist(); status('Saved. Your changes are stored' + (window.Sync && Sync.canWrite && Sync.canWrite() ? ' and syncing to every device.' : ' on this browser.'), 'ok'); } });
     if ($('tk-btn-library')) $('tk-btn-library').addEventListener('click', openLibrary);
     if ($('tk-btn-download')) $('tk-btn-download').addEventListener('click', exportJSON);
     if ($('tk-load-input')) $('tk-load-input').addEventListener('change', function (e) { importJSON(e.target.files[0]); });
     if ($('tk-btn-load')) $('tk-btn-load').addEventListener('click', function () { $('tk-load-input').click(); });
     if ($('tk-btn-print')) $('tk-btn-print').addEventListener('click', printTracker);
+
+    // Warn before leaving with unsaved changes.
+    window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 
     // Drive
     if (el.driveArea && window.Drive) { driveState(); window.Drive.onStatus(driveState); }

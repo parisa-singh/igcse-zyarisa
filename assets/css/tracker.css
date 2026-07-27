@@ -207,3 +207,21 @@
 .tk-gate__actions .btn { width: 100%; max-width: 280px; }
 .tk-gate__fine { font-size: var(--text-xs); color: var(--ink-muted); margin-bottom: 0 !important; }
 .tk-gate__spin { margin-bottom: 0 !important; }
+
+/* ---- Explicit save: button state + unsaved indicator -------------------- */
+#tk-btn-save.tk-btn-dirty { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); }
+#tk-btn-save:disabled { opacity: .65; }
+.tk-unsaved { color: var(--amber); font-weight: 700; margin-right: 4px; }
+
+/* ---- Viewer (read-only): hide/disable every editing affordance ---------- */
+body.tk-viewer .tk-paths-intro,
+body.tk-viewer .tk-paths { display: none; }
+body.tk-viewer .tk-light { pointer-events: none; opacity: .92; cursor: default; }
+body.tk-viewer .tk-inline-edit { pointer-events: none; }
+body.tk-viewer [data-add-topic],
+body.tk-viewer [data-add-obj],
+body.tk-viewer [data-del],
+body.tk-viewer [data-act="add-unit"],
+body.tk-viewer [data-del-tr],
+body.tk-viewer #tk-btn-load,
+body.tk-viewer #tk-btn-save { display: none !important; }
