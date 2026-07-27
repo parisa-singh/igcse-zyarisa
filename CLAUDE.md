@@ -230,6 +230,17 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
 - Drive integration is best-effort GIS token flow; needs a real Google Cloud Client ID + browser to fully verify.
 - Content (command words, examiner-quote patterns, resource links, calculator key sequences) written from
   general IGCSE knowledge — accurate at a high level; verify exact 2028-syllabus specifics against Cambridge PDFs.
+- CALCULATOR = Casio **fx-CG100** (2026-07-26, per user — she owns it). subjects/international-math.html
+  calculator deep-dive fully rewritten CG50→CG100: IB Exam Mode via HOME→Exam Mode app, flashing icon +
+  coloured border, auto data backup/restore (NO green LED / F-key combo); tab-based key paths
+  (HOME→app→tab), not F-keys. CG100 manual: HTML support.casio.com/global/en/calc/manual/fx-CG100_1AUGRAPH_en/
+  + PDF (exam-mode section p.253). subjects.json specialNote names the CG100. Any future "CG50"/F-key/
+  "green LED" content is stale — use CG100. (CG50 still mentioned only as "successor to the CG50" context.)
+- RESOURCE LINK AUDIT (2026-07-26): several links were verified-dead 404s and fixed repo-wide (resources.html
+  + resources.md + the 5 subject pages that reused them): Grade-threshold URL, PMT `/igcse-revision/`→homepage,
+  Cambridge GO removed, and guessed YouTube handles (@igcsephysicsmath/@snaprevise/@MrLeeIGCSEBusiness/
+  @dineshbakshi) → honest youtube.com/results?search_query= links. Flyp Academy links left as-is (not flagged).
+  If adding YouTube resources, prefer verified channels or search links — don't guess @handles (they 404).
 
 ## Next up
 - Awaiting user OK to roll the playful/gamified style (see "Design direction") across the remaining
