@@ -136,6 +136,12 @@
     <div class="tk-modal" id="tk-modal-content"></div>
   </div>
 
+  <!-- Floating save bar — appears whenever there are unsaved changes -->
+  <div id="tk-savebar" class="tk-savebar no-print" hidden>
+    <span class="tk-savebar__msg">Unsaved changes</span>
+    <button class="btn btn--primary" id="tk-savebar-btn">💾 Save changes</button>
+  </div>
+
   <!-- Sign-in gate: blocks the tracker until synced (only when sync is configured) -->
   <div id="tk-gate" class="tk-gate no-print" hidden>
     <div class="tk-gate__card" id="tk-gate-card"></div>

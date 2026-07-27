@@ -49,6 +49,13 @@
         <span class="eyebrow">Your progress</span>
         <h2>Every subject at a glance</h2>
       </div>
+      <details class="subj-overall" id="subj-overall">
+        <summary class="subj-overall__summary">
+          <span class="subj-overall__title">Overall breakdown — green / amber / red across all subjects</span>
+          <span class="subj-overall__chev" aria-hidden="true">▾</span>
+        </summary>
+        <div class="subj-overall__body" id="subj-overall-body"></div>
+      </details>
       <div class="subj-board" id="subj-board"></div>
       <p class="subj-legend u-xs" style="margin-top: var(--space-3);">
         <span class="subj-key"><i class="subj-dot subj-dot--green"></i>Green — confident</span>
@@ -249,7 +256,7 @@
             '<div class="subj-bar__seg subj-bar__seg--red" style="width:' + rp + '%"></div>' +
             '<div class="subj-bar__seg subj-bar__seg--unrated" style="width:' + up + '%"></div>' +
           '</div>' +
-          '<div class="subj-row__meta">' + c.green + ' green · ' + c.amber + ' amber · ' + c.red + ' red · ' + c.unrated + ' unrated · ' + c.total + ' topics</div></a>';
+          '<div class="subj-row__meta">' + gp + '% green · ' + ap + '% amber · ' + rp + '% red · ' + c.total + ' topics</div></a>';
       }
 
       SUBJECTS.forEach(function (subj) { seen[subj.slug] = true; rowsHTML += rowHTML(subj.name, subj.code, subj.slug, load(subj.slug)); });
@@ -264,6 +271,33 @@
         }
       }
       if (board) board.innerHTML = rowsHTML;
+
+      // Expandable overall breakdown — green / amber / red % across ALL subjects.
+      var obody = document.getElementById('subj-overall-body');
+      if (obody) {
+        var og = pctOf(overall.green, overall.total), oa = pctOf(overall.amber, overall.total),
+            orr = pctOf(overall.red, overall.total), ou = Math.max(0, 100 - og - oa - orr);
+        function brk(cls, label, pc, n) {
+          return '<li class="subj-breakdown__row"><span class="subj-dot subj-dot--' + cls + '"></span>' +
+            '<span class="subj-breakdown__label">' + label + '</span>' +
+            '<span class="subj-breakdown__pct">' + pc + '%</span>' +
+            '<span class="subj-breakdown__n">' + n + ' of ' + overall.total + ' topics</span></li>';
+        }
+        obody.innerHTML =
+          '<div class="subj-bar" style="margin:var(--space-3) 0">' +
+            '<div class="subj-bar__seg subj-bar__seg--green" style="width:' + og + '%"></div>' +
+            '<div class="subj-bar__seg subj-bar__seg--amber" style="width:' + oa + '%"></div>' +
+            '<div class="subj-bar__seg subj-bar__seg--red" style="width:' + orr + '%"></div>' +
+            '<div class="subj-bar__seg subj-bar__seg--unrated" style="width:' + ou + '%"></div>' +
+          '</div>' +
+          '<ul class="subj-breakdown">' +
+            brk('green', 'Green — confident', og, overall.green) +
+            brk('amber', 'Amber — getting there', oa, overall.amber) +
+            brk('red', 'Red — not yet', orr, overall.red) +
+            brk('unrated', 'Not rated', ou, overall.unrated) +
+          '</ul>' +
+          '<p class="u-xs u-muted" style="margin:var(--space-2) 0 0">Across ' + (startedCount || 0) + ' started subject' + (startedCount === 1 ? '' : 's') + ' · ' + overall.total + ' topics total.</p>';
+      }
 
       // Hero ring = overall green % across every started subject.
       var ring = document.getElementById('ring');

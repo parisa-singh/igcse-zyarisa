@@ -180,6 +180,10 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
   add-unit) call markDirty(); NOTHING persists until the user clicks the new **#tk-btn-save** ("💾 Save
   changes" when dirty / "✓ All changes saved" when clean). adopt() still persist()s immediately (new
   tracker saved on creation). openStored() sets dirty=false + confirms before discarding unsaved edits.
+  Prominence: besides sidebar #tk-btn-save, a FLOATING #tk-savebar (fixed bottom-centre pill, tracker.css
+  `.tk-savebar`, pulsing amber dot) shows whenever dirty (editors only); both call doSave().
+  Home board also gained an EXPANDABLE overall breakdown (native <details> #subj-overall) showing
+  green/amber/red/unrated % across ALL subjects; per-subject rows now show % not raw counts. main.css §22b.
   `beforeunload` warns if dirty. mergeRemoteDoc SKIPS the open tracker while dirty (won't clobber
   unsaved edits). renderSaveState() drives button + #tk-save-info text.
 - VIEWER READ-ONLY: isViewer()/canEditData() (signed-in Firebase role==='viewer'). Every mutation +

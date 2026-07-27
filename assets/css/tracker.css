@@ -213,6 +213,24 @@
 #tk-btn-save:disabled { opacity: .65; }
 .tk-unsaved { color: var(--amber); font-weight: 700; margin-right: 4px; }
 
+/* Floating "Save changes" bar — impossible to miss when you have unsaved edits */
+.tk-savebar {
+  position: fixed; left: 50%; bottom: var(--space-5); transform: translateX(-50%);
+  z-index: 3500; display: flex; align-items: center; gap: var(--space-4);
+  padding: 10px 12px 10px 20px; max-width: calc(100vw - 2 * var(--space-4));
+  background: var(--paper); border: 2px solid var(--accent); border-radius: var(--radius-pill);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 28%, transparent);
+  animation: tk-savebar-in .25s ease;
+}
+.tk-savebar[hidden] { display: none; }
+.tk-savebar__msg { display: inline-flex; align-items: center; gap: 9px; font-weight: 700; font-size: var(--text-sm); color: var(--ink); white-space: nowrap; }
+.tk-savebar__msg::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 0 color-mix(in srgb, var(--amber) 60%, transparent); animation: tk-savebar-pulse 1.6s ease-in-out infinite; }
+.tk-savebar .btn { white-space: nowrap; }
+@keyframes tk-savebar-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes tk-savebar-pulse { 0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--amber) 55%, transparent); } 50% { box-shadow: 0 0 0 6px transparent; } }
+@media (max-width: 520px) { .tk-savebar { left: var(--space-4); right: var(--space-4); transform: none; justify-content: space-between; } @keyframes tk-savebar-in { from { opacity: 0; } to { opacity: 1; } } }
+@media print { .tk-savebar { display: none !important; } }
+
 /* ---- Viewer (read-only): hide/disable every editing affordance ---------- */
 body.tk-viewer .tk-paths-intro,
 body.tk-viewer .tk-paths { display: none; }

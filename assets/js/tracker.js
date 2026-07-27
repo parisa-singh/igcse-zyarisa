@@ -82,6 +82,8 @@
       else if (dirty) info.innerHTML = '<span class="tk-unsaved">●</span> Unsaved changes — click Save.';
       else info.innerHTML = lastSavedAt ? '<span class="tk-saved-tick">✓</span> Saved · ' + lastSavedAt : 'Not saved yet.';
     }
+    // Floating save bar — visible only while there are unsaved edits (editors only).
+    if (el.saveBar) el.saveBar.hidden = !(state.slug && dirty && !isViewer());
   }
 
   function persist() {
@@ -1042,6 +1044,7 @@
       subjectName: $('tk-subject-name'), progress: $('tk-progress'),
       viewToggle: $('tk-view-toggle'), filters: $('tk-filters'), tierFilter: $('tk-tier-filter'),
       saveInfo: $('tk-save-info'), driveArea: $('tk-drive-area'), saveBtn: $('tk-btn-save'),
+      saveBar: $('tk-savebar'), saveBarBtn: $('tk-savebar-btn'),
       syncBar: $('tk-sync-bar'), gate: $('tk-gate'), gateCard: $('tk-gate-card'),
       status: $('tk-status'), preview: $('tk-preview'), toolbar: $('tk-toolbar'), tableWrap: $('tk-table-wrap'),
       modal: $('tk-modal-backdrop'), modalContent: $('tk-modal-content'),
@@ -1080,7 +1083,9 @@
     if (el.tierFilter) el.tierFilter.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { state.tier = b.getAttribute('data-tier'); renderTierFilter(); renderProgress(); renderTable(); }); });
 
     // Save controls
-    if (el.saveBtn) el.saveBtn.addEventListener('click', function () { if (dirty) { persist(); status('Saved. Your changes are stored' + (window.Sync && Sync.canWrite && Sync.canWrite() ? ' and syncing to every device.' : ' on this browser.'), 'ok'); } });
+    function doSave() { if (dirty) { persist(); status('Saved. Your changes are stored' + (window.Sync && Sync.canWrite && Sync.canWrite() ? ' and syncing to every device.' : ' on this browser.'), 'ok'); } }
+    if (el.saveBtn) el.saveBtn.addEventListener('click', doSave);
+    if (el.saveBarBtn) el.saveBarBtn.addEventListener('click', doSave);
     if ($('tk-btn-library')) $('tk-btn-library').addEventListener('click', openLibrary);
     if ($('tk-btn-download')) $('tk-btn-download').addEventListener('click', exportJSON);
     if ($('tk-load-input')) $('tk-load-input').addEventListener('change', function (e) { importJSON(e.target.files[0]); });
