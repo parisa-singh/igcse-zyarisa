@@ -5,7 +5,7 @@
     "slug": "international-math",
     "examSeason": "May/June 2028",
     "tier": "Core and Extended",
-    "specialNote": "Includes investigation paper. Calculator required and central to all papers.",
+    "specialNote": "Includes investigation paper. Calculator (Casio fx-CG100) required and central to all papers. Papers 1/2 are non-calculator — don't neglect written arithmetic.",
     "papers": [
       { "number": 1, "name": "Non-Calculator Short Answer (Core)", "duration": "45 min", "weightPercent": 25, "description": "Short answer, no calculator" },
       { "number": 2, "name": "Non-Calculator Short Answer (Extended)", "duration": "45 min", "weightPercent": 20, "description": "Short answer, no calculator" },

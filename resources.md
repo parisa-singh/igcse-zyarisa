@@ -21,8 +21,7 @@
 | Resource | URL | Access | What It Is | Notes |
 |---|---|---|---|---|
 | Cambridge IGCSE Subject Pages | https://www.cambridgeinternational.org/programmes-and-qualifications/cambridge-upper-secondary/cambridge-igcse/subjects/ | Free | Hub for all official Cambridge resources per subject | Start here. Syllabuses, specimen papers, learner guides, examiner reports for every subject. |
-| Grade Threshold Tables | https://www.cambridgeinternational.org/exam-administration/results/grade-thresholds/ | Free | Minimum marks for each grade per paper and session | Use to understand how many marks you actually need. Released after each exam series. |
-| Cambridge GO | https://www.cambridge.org/go | Free (with school access) | Digital platform for Cambridge-endorsed textbooks and resources | Ask your school if they have a Cambridge GO licence — many do. Coursebooks may be accessible here. |
+| Grade Threshold Tables | https://www.cambridgeinternational.org/programmes-and-qualifications/cambridge-upper-secondary/cambridge-igcse/grade-threshold-tables/ | Free | Minimum marks for each grade per paper and session | Use to understand how many marks you actually need. Released after each exam series. |
 
 ---
 
@@ -41,7 +40,7 @@
 
 | Resource | URL | Access | Subjects | Notes |
 |---|---|---|---|---|
-| Physics & Maths Tutor (PMT) | https://www.physicsandmathstutor.com/igcse-revision/ | Free | Physics, Maths, Economics, Computer Science, English | Completely free, no sign-in. Topic questions with mark schemes. Excellent for targeted chapter practice. |
+| Physics & Maths Tutor (PMT) | https://www.physicsandmathstutor.com/ | Free | Physics, Maths, Economics, Computer Science, English | Completely free, no sign-in. Topic questions with mark schemes. Excellent for targeted chapter practice. |
 | Dinesh Bakshi | https://dineshbakshi.com/igcse-gcse-economics | Free | Economics (0455), Business (0450) | Detailed IGCSE-specific notes, quizzes, worksheets, case studies. Among the best free resources for these two. |
 | Brainscape — IGCSE Psychology | https://www.brainscape.com/subjects/igcse-psychology | Free | Psychology (0980) | Community flashcard decks. Good for core studies and key terms. Quality varies by deck. |
 | student.craigndave.org | https://student.craigndave.org/ | Free | Computer Science (0478) | Video index from Craig 'n' Dave by topic. Computational cheat sheets and reference guides. |
@@ -68,7 +67,7 @@
 | Resource | URL | Access | Notes |
 |---|---|---|---|
 | Cognito | https://www.youtube.com/@Cognitoedu | Free | Short, animated, clear topic explainers. Maps well to 0625. Best for understanding concepts quickly. |
-| IGCSE Physics (dedicated) | https://www.youtube.com/@igcsephysicsmath | Free | Channel dedicated to IGCSE Physics & Maths 0625. Topic-by-topic. |
+| IGCSE Physics (dedicated) | https://www.youtube.com/results?search_query=IGCSE+Physics+0625+revision | Free | Channel dedicated to IGCSE Physics & Maths 0625. Topic-by-topic. |
 | The IGCSE Channel | https://www.youtube.com/@TheIGCSEChannel | Free | Past paper walkthroughs with A* model answers tied to the mark scheme. |
 | Cambridge In 5 Minutes | https://www.youtube.com/@cambridgein5minutes | Free | Cambridge science concepts in short videos. Also free notes on Free Exam Academy. |
 
@@ -80,7 +79,7 @@
 |---|---|---|---|
 | Ginger Mathematician | https://www.youtube.com/@GingerMathematician | Free | Head of Maths at an international school. Specific 0607 walkthroughs and calculator technique. Top pick for international maths. |
 | The Organic Chemistry Tutor | https://www.youtube.com/@TheOrganicChemistryTutor | Free | Excellent for maths; shows Casio keystrokes for stats/graphing/algebra. Search "[topic] calculator". |
-| Casio Education (Official) | https://www.youtube.com/@CasioEducationUK | Free | Official Casio: exam mode, feature walkthroughs. Search "CG50 [topic]". |
+| Casio Education (Official) | https://www.youtube.com/@CasioEducationUK | Free | Official Casio: exam mode, feature walkthroughs. Search "fx-CG100 [topic]". |
 | Math with Mr. J | https://www.youtube.com/@MathwithMrJ | Free | Clear step-by-step; good for stats and equation solving with calculator guidance. |
 | IGCSE with Optimus | https://www.youtube.com/@IGCSEwithOptimus | Free | Recorded lessons, tips and tricks for physics and maths; past paper technique. |
 | 3Blue1Brown | https://www.youtube.com/@3blue1brown | Free | Above IGCSE exam level, but invaluable for *why* things work — functions/transformations, statistics intuition, any topic that won't click conceptually. Use to build understanding, NOT for exam technique or past-paper prep. |
@@ -93,7 +92,7 @@
 |---|---|---|---|---|
 | IGCSESUCCESS | https://www.youtube.com/@iGCSESuccess | Free | English Language (0500), Literature (0475) | Built specifically for Cambridge IGCSE English. Covers both 0500 and 0475 directly. |
 | Mr Salles Teaches English | https://www.youtube.com/@MrSallesTeachesEnglish | Free | English Language, Literature | 900+ videos on exam technique — structure, what examiners reward, fast grade gains. GCSE-focused, directly applicable. |
-| Snap Revise | https://www.youtube.com/@snaprevise | Free | English Language | Short structured videos on language feature ID and analysis. Useful for 0500 Paper 1 commentary skills. |
+| Snap Revise | https://www.youtube.com/results?search_query=Snap+Revise+English+language+analysis | Free | English Language | Short structured videos on language feature ID and analysis. Useful for 0500 Paper 1 commentary skills. |
 
 ---
 
@@ -127,7 +126,7 @@
 | Resource | URL | Access | Notes |
 |---|---|---|---|
 | BizEdMadeSimple | https://www.youtube.com/@BizEdMadeSimple | Free | Full-time Cambridge Business teacher. Covers 0450 specifically. Companion website with free resources. |
-| Mr Lee — IGCSE Business Studies | https://www.youtube.com/@MrLeeIGCSEBusiness | Free | 15+ year IGCSE teacher and examiner. Insider view on application and evaluation technique. |
+| Mr Lee — IGCSE Business Studies | https://www.youtube.com/results?search_query=IGCSE+Business+Studies+0450+revision | Free | 15+ year IGCSE teacher and examiner. Insider view on application and evaluation technique. |
 | ThinkIGCSE | https://www.youtube.com/@thinkIGCSE | Free | 100+ videos on Business and Economics tailored for IGCSE. Companion to dineshbakshi.com. |
 
 ---
@@ -137,8 +136,8 @@
 | Resource | URL | Access | Notes |
 |---|---|---|---|
 | ThinkIGCSE | https://www.youtube.com/@thinkIGCSE | Free | Syllabus-specific content for 0455 (and Business). |
-| Mr Lee — IGCSE Business Studies | https://www.youtube.com/@MrLeeIGCSEBusiness | Free | Covers Economics too. Examiner perspective useful for diagrams and data response. |
-| Dinesh Bakshi — YouTube | https://www.youtube.com/@dineshbakshi | Free | Companion to dineshbakshi.com; explanations aligned to the 0455 syllabus. |
+| Mr Lee — IGCSE Business Studies | https://www.youtube.com/results?search_query=IGCSE+Business+Studies+0450+revision | Free | Covers Economics too. Examiner perspective useful for diagrams and data response. |
+| Dinesh Bakshi — YouTube | https://www.youtube.com/results?search_query=Dinesh+Bakshi+economics+business | Free | Companion to dineshbakshi.com; explanations aligned to the 0455 syllabus. |
 
 ---
 
@@ -176,8 +175,8 @@
 | BizEdMadeSimple (website) | https://bizEdMadeSimple.com | Free | Business (0450) | Free resources plus optional paid courses. Free resources alone are substantial. |
 | Flyp Academy — Psychology | https://flyp.academy/igcse-revision/psychology | Freemium | Psychology (0980) | Notes, videos, quizzes for 0980. One of few platforms with dedicated IGCSE Psychology content. |
 | Cambridge — Student Guide to Exams | https://www.cambridgeinternational.org/exam-administration/cambridge-exams/preparing-for-exams/ | Free | All subjects | Cambridge's own guidance on preparing for exams. Worth reading once. |
-| Casio fx-CG50 Guidebook PDF | https://support.casio.com/global/en/calc/manual/fx-CG50_Soft_E.pdf | Free | Maths (0607) | Complete official manual. Download and keep offline. Essential for the calculator section. |
-| Casio fx-991EX Guidebook PDF | https://support.casio.com/global/en/calc/manual/fx-991EX_991EX_E.pdf | Free | Maths (0607) | Official manual for the budget Casio. Download and keep. |
+| Casio fx-CG100 Manual (HTML) | https://support.casio.com/global/en/calc/manual/fx-CG100_1AUGRAPH_en/ | Free | Maths (0607) | Complete official manual, searchable by topic. Authoritative for every key sequence. |
+| Casio fx-CG100 Manual (PDF) | https://www.casio.com/content/dam/casio/global/support/manuals/calculators/pdf/2022/mutual/f/fx-CG100_1AUGRAPH_EN_PDF.pdf | Free | Maths (0607) | Same manual as PDF — download and keep offline. Exam-mode section starts at p.253. |
 
 ---
 
