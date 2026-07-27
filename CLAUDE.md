@@ -243,13 +243,24 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
   If adding YouTube resources, prefer verified channels or search links — don't guess @handles (they 404).
 
 ## Next up
-- Awaiting user OK to roll the playful/gamified style (see "Design direction") across the remaining
-  content pages: study-system.html, subjects/index.html, past-papers.html, resources.html, and the
-  subject pages — bigger colorful cards, more visual, less prose, keep the resource tables.
-- Then: a real-browser QA pass of the playful home progress-ring (localStorage read) + countdown.
+- **BLOCKING for cloud sync to go live:** user must finish the Firebase console steps — publish the
+  security rules with the real allowlist (editors: parisasingh@gmail.com, singhzyanya@gmail.com,
+  systemcoreos77@gmail.com; viewers: shilpasingh24@gmail.com, sharvan.kumar@gmail.com,
+  personal123777@gmail.com — CONSOLE ONLY, never commit these), enable Google sign-in, and add
+  `parisa-singh.github.io` to Authorised domains. See the "Cross-device sync" section above.
+- OPEN QUESTION from user: site "slow" clicking links — largely traced to dead/huge-PDF links (now
+  fixed); pending user clarification whether internal page-to-page nav is also slow.
+- Not yet browser-QA'd end-to-end with real Google accounts: sign-in gate, role read (editor vs viewer),
+  live merge across two devices, explicit-save round-trip, home progress board reading synced data.
+- Still optional / not done: roll the playful/gamified style across study-system/subjects/past-papers/
+  resources (home is the reference); a home-page live sync read (currently localStorage-only).
 
 ## Live deploy status
 - Repo **parisa-singh/igcse-zyarisa** (public), Pages from main/root.
   Live: https://parisa-singh.github.io/igcse-zyarisa/  · local `origin` set to the same repo.
 - gh active account is **parisa-singh** (switched from parisa-eyezense). Commit identity:
-  parisa-singh / personal123777@gmail.com. All work committed & pushed through the playful home redesign.
+  parisa-singh / personal123777@gmail.com. All work committed & pushed (latest: CG100 switch + resource
+  link audit + explicit-save/viewer-roles + home progress board + Firebase sync scaffolding).
+- NOTE: the repo lives in a OneDrive folder — OneDrive intermittently locks .git during `git push`,
+  stalling it. Fix: run the push in the background (it completes once OneDrive releases the lock), or
+  pause OneDrive sync momentarily. `git ls-remote` / fetch are unaffected; only push hangs.
