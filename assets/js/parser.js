@@ -38,7 +38,8 @@
   var CONTENT_ENDS = [
     'assessment objectives', 'appendix', 'command words', 'glossary of',
     'other information', 'how to use this syllabus', 'changes to this syllabus',
-    'grade descriptions', 'mathematical notation', 'important notices'
+    'grade descriptions', 'mathematical notation', 'important notices',
+    'details of the assessment', 'what else you need to know'
   ];
   // Junk lines to drop outright (headers / footers / boilerplate).
   var JUNK = [
@@ -114,9 +115,13 @@
     var curUnit = null, curTopic = null, curObj = null, curTier = null;
     var flagged = [];
 
-    function ensureUnit(id, title) { curUnit = { id: id, title: clean(title), topics: [] }; units.push(curUnit); curTopic = null; curObj = null; }
+    function ensureUnit(id, title) {
+      for (var i = 0; i < units.length; i++) { if (units[i].id === id) { curUnit = units[i]; curTopic = null; curObj = null; return; } }
+      curUnit = { id: id, title: clean(title), topics: [] }; units.push(curUnit); curTopic = null; curObj = null;
+    }
     function ensureTopic(id, title) {
       if (!curUnit) ensureUnit(id.split('.')[0], 'Unit ' + id.split('.')[0]);
+      for (var i = 0; i < curUnit.topics.length; i++) { if (curUnit.topics[i].id === id) { curTopic = curUnit.topics[i]; curObj = null; return; } }
       curTopic = { id: id, title: clean(title), objectives: [] }; curUnit.topics.push(curTopic); curObj = null;
     }
     function addObjective(text) {
@@ -237,11 +242,31 @@
     return /^(reading|writing|listening|speaking|grammar|vocabulary)$/i.test(t);
   }
 
+  /* ---- Pre-process: rebuild lines from one-paragraph PDF/copy text --------- */
+  // Copying a Cambridge PDF flattens everything onto one line, with the numbers
+  // (1 / 1.1 / 1.1.1) and bullets (•) jammed inline. Put each structure marker on
+  // its own line and strip the repeating page furniture, so the numeric parser
+  // can see the hierarchy. Text that already has newlines is largely unaffected.
+  function preprocessInline(text) {
+    var t = ' ' + String(text || '').replace(/\r/g, ' ') + ' ';
+    // Drop the repeating footer/boilerplate that gets glued between sections.
+    t = t.replace(/Cambridge (?:IGCSE|IGCSE \(9[–-]1\)|O Level|International)[^.]*?syllabus for \d{4}\./gi, ' ');
+    t = t.replace(/www\.cambridgeinternational\.org\S*/gi, ' ');
+    t = t.replace(/back to contents page/gi, ' ');
+    t = t.replace(/\bcontinued\b/gi, ' ');
+    // One structure marker per line. Order matters: bullets, then 3-, 2-, 1-level.
+    t = t.replace(/\s*[•▪·]\s*/g, '\n• ');
+    t = t.replace(/\s+(\d+\.\d+\.\d+)\s+/g, '\n$1 ');       // 1.1.1 objective
+    t = t.replace(/\s+(\d+\.\d+)\s+(?=[A-Za-z])/g, '\n$1 '); // 1.1 topic
+    t = t.replace(/\s+([1-9])\s+(?=[A-Z][a-z])/g, '\n$1 ');  // 1 Unit heading
+    return t;
+  }
+
   /* ---- Stage 4/5: orchestration + confidence + stats --------------------- */
   function parseSyllabus(text) {
-    // Full-trim each line (leading spaces too) so copied/indented text still
-    // matches the "number at start of line" patterns.
-    var rawLines = String(text || '').split(/\r?\n/).map(function (l) { return l.replace(/\t/g, ' ').replace(/\s+/g, ' ').trim(); });
+    // Rebuild lines from flattened one-paragraph text, then full-trim each line
+    // (leading spaces too) so copied/indented text still matches the patterns.
+    var rawLines = preprocessInline(text).split(/\r?\n/).map(function (l) { return l.replace(/\t/g, ' ').replace(/\s+/g, ' ').trim(); });
     var lines = stripNoise(rawLines);
     var pattern = detectPattern(lines);
 

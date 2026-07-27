@@ -182,6 +182,14 @@ warm, specific, big-sister — never generic study-site. Pure HTML/CSS/JS, no fr
   warning set). Verified via scratchpad ptest.js against 5 formats. Input UI reworked: three paths are
   now clearly ALTERNATIVES ("pick just one"), PDF promoted as primary (.tk-path--primary), badges say
   ★/or not 1/2/3.
+  FLATTENED-PDF FIX (2026-07-26): real Cambridge PDFs copy out as ONE giant paragraph (numbers 1/1.1/
+  1.1.1 and • bullets all inline, no newlines) — the #1 cause of "Couldn't detect a topic structure".
+  New preprocessInline() rebuilds lines: strips the repeating "Cambridge … syllabus for YYYY / www… /
+  Back to contents page / continued" furniture, then inserts a newline before each •, \d+.\d+.\d+,
+  \d+.\d+ (topic), and " N " unit heading. CONTENT_ENDS gained 'details of the assessment' + 'what else
+  you need to know' to drop the tail. ensureUnit/ensureTopic now DEDUPE by id so page-break "continued"
+  repeats merge instead of duplicating. Verified against the real Business Studies 0450 paste (6 units,
+  ~20 topics, high confidence).
 - drive.js exposes window.Drive (GIS token flow + Drive REST v3, scope drive.file, folder "IGCSE Tracker").
   Client ID stored at `igcse-drive-client-id`. Optional; nothing runs until user sets it up.
 - "Select Subject" path: subjects.json has NO topic lists (only papers), so tracker.js embeds SUBJECT_OUTLINES
